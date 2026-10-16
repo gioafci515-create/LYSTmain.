@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DemoNote,
   Eyebrow,
@@ -11,8 +11,6 @@ import {
 } from "./ui";
 
 type Step = "date" | "time" | "details" | "review" | "done" | "failed";
-type Availability = "loading" | "ready" | "empty";
-export type DemoState = "failure" | "empty" | null;
 
 const STEPS: { key: Exclude<Step, "done" | "failed">; label: string }[] = [
   { key: "date", label: "Date" },
@@ -20,51 +18,79 @@ const STEPS: { key: Exclude<Step, "done" | "failed">; label: string }[] = [
   { key: "details", label: "Details" },
   { key: "review", label: "Review" },
 ];
-const TIMES = ["Example time A", "Example time B", "Example time C", "Example time D"];
+const TIMES = ["09:30", "11:00", "14:00", "16:30"];
 const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
-const EMAIL_RE = /^\S+@\S+\.\S+$/;
+const WEEKS_SHOWN = 5;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const FLOW_NOTE =
-  "One proposed flow for Hero and final Consultation CTAs. Close returns to the originating entry point — intent only.";
+const iso = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+const longDate = new Intl.DateTimeFormat("en-GB", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
+const fmtIso = (s: string) => longDate.format(new Date(`${s}T00:00:00Z`));
+
+type Cell = { iso: string; day: number; disabled: boolean };
+
+function buildCalendar(): { cells: Cell[]; label: string } {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const start = new Date(today);
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7)); // back to Monday
+  const cells: Cell[] = Array.from({ length: WEEKS_SHOWN * 7 }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    return { iso: iso(d), day: d.getDate(), disabled: d <= today };
+  });
+  const first = new Date(`${cells.find((c) => !c.disabled)!.iso}T00:00:00Z`);
+  const last = new Date(`${cells[cells.length - 1].iso}T00:00:00Z`);
+  const m = new Intl.DateTimeFormat("en-GB", { month: "long", timeZone: "UTC" });
+  const y = new Intl.DateTimeFormat("en-GB", { year: "numeric", timeZone: "UTC" });
+  const label =
+    m.format(first) === m.format(last)
+      ? `${m.format(first)} ${y.format(first)}`
+      : `${m.format(first)} – ${m.format(last)} ${y.format(last)}`;
+  return { cells, label };
+}
 
 export default function BookingFlow({
   titleId,
-  demo,
   onClose,
 }: {
   titleId: string;
-  demo: DemoState;
   onClose: () => void;
 }) {
   const [step, setStep] = useState<Step>("date");
-  const [availability, setAvailability] = useState<Availability>("loading");
-  const [day, setDay] = useState<number | null>(null);
+  const [date, setDate] = useState<string | null>(null);
   const [time, setTime] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [context, setContext] = useState("");
+  const [website, setWebsite] = useState(""); // honeypot
   const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
+  const [sending, setSending] = useState(false);
+  const [failMessage, setFailMessage] = useState("");
   const summaryRef = useRef<HTMLDivElement>(null);
 
-  // Static stand-in for an availability request; no network call is made.
-  useEffect(() => {
-    if (availability !== "loading") return;
-    const t = setTimeout(
-      () => setAvailability(demo === "empty" ? "empty" : "ready"),
-      600,
-    );
-    return () => clearTimeout(t);
-  }, [availability, demo]);
+  const calendar = useMemo(() => buildCalendar(), []);
+  const timeZone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
 
   useEffect(() => {
     if (errors.name || errors.email) summaryRef.current?.focus();
   }, [errors]);
 
-  const stepIndex = STEPS.findIndex((s) => s.key === step);
-  const finished = step === "done" || step === "failed";
-  const dateLabel = day ? `Sample month / Day ${day} — design only` : "";
-  const timeLabel = time ? `${time} / Time zone — to be confirmed` : "";
-  const contactLabel = `${name.trim() || "[Name placeholder]"} · ${email.trim() || "[Email placeholder]"}`;
+  const stepIndex = step === "failed" ? 3 : STEPS.findIndex((s) => s.key === step);
+  const finished = step === "done";
+  const dateLabel = date ? fmtIso(date) : "";
+  const timeLabel = time ? `${time} (${timeZone})` : "";
+  const contactLabel = `${name.trim()} · ${email.trim()}${phone.trim() ? ` · ${phone.trim()}` : ""}`;
+  const errorFields = [errors.name && "Name", errors.email && "Email"].filter(Boolean);
 
   function submitDetails() {
     const next: typeof errors = {};
@@ -74,7 +100,48 @@ export default function BookingFlow({
     if (!next.name && !next.email) setStep("review");
   }
 
-  const errorFields = [errors.name && "Name", errors.email && "Email"].filter(Boolean);
+  async function confirm() {
+    if (sending || !date || !time) return;
+    setSending(true);
+    const q = new URLSearchParams(window.location.search);
+    try {
+      const res = await fetch("/api/consultations", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          context,
+          date,
+          time: `${time} ${timeZone}`,
+          website,
+          referrer: document.referrer,
+          utm_source: q.get("utm_source") ?? "",
+        }),
+      });
+      if (res.ok) {
+        setStep("done");
+      } else {
+        const data = (await res.json().catch(() => null)) as {
+          error?: string;
+          fields?: Record<string, string>;
+        } | null;
+        if (res.status === 400 && data?.fields && (data.fields.name || data.fields.email)) {
+          setErrors({ name: data.fields.name, email: data.fields.email });
+          setStep("details");
+        } else {
+          setFailMessage(data?.error ?? "");
+          setStep("failed");
+        }
+      }
+    } catch {
+      setFailMessage("");
+      setStep("failed");
+    } finally {
+      setSending(false);
+    }
+  }
 
   return (
     <>
@@ -96,12 +163,12 @@ export default function BookingFlow({
         id={titleId}
         className="mt-10 text-[40px] font-light leading-[1.05] tracking-tight md:text-5xl"
       >
-        {step === "done" ? "Consultation example" : "Book a consultation"}
+        {step === "done" ? "Request received" : "Book a consultation"}
       </h2>
 
       <ol className="mt-5 grid grid-cols-4 gap-x-3" aria-label="Progress">
         {STEPS.map((s, i) => {
-          const complete = finished ? true : i < stepIndex;
+          const complete = finished || i < stepIndex;
           const current = !finished && i === stepIndex;
           return (
             <li
@@ -121,88 +188,46 @@ export default function BookingFlow({
       </ol>
 
       <div className="mt-8" aria-live="polite">
-        {step === "date" && availability === "loading" && (
-          <div className="pt-8">
-            <div className="flex gap-1" aria-hidden>
-              <span className="h-2 w-2 bg-black" />
-              <span className="h-2 w-2 bg-[#e7dfd4]" />
-              <span className="h-2 w-2 bg-[#e7dfd4]" />
-            </div>
-            <p className="mt-6 text-2xl font-light">Checking availability…</p>
-            <p className="mt-5 text-base font-light text-black/80">
-              Static loading example. No availability request is being made.
-            </p>
-            <div className="mt-10">
-              <PrimaryButton disabled>Please wait — demo</PrimaryButton>
-            </div>
-          </div>
-        )}
-
-        {step === "date" && availability === "empty" && (
-          <div className="pt-6">
-            <Eyebrow>Sample empty state</Eyebrow>
-            <p className="mt-6 text-3xl font-light">No appointments to display</p>
-            <p className="mt-6 text-base font-light text-black/80">
-              This is an example empty state, not a statement about LYST’s real
-              service or availability. No dates are being retrieved.
-            </p>
-            <div className="mt-10 space-y-2">
-              <PrimaryButton onClick={() => setAvailability("loading")}>
-                Try again
-              </PrimaryButton>
-              <TextButton onClick={() => setAvailability("loading")}>
-                Back to date
-              </TextButton>
-            </div>
-          </div>
-        )}
-
-        {step === "date" && availability === "ready" && (
+        {step === "date" && (
           <div>
             <p className="text-base font-light leading-relaxed text-black/80 md:text-lg">
-              Choose a date to begin. No account signup is required for a
-              consultation.
+              Choose the day you would like to talk. No account is required.
             </p>
-            <p className="mt-8 text-[11px] uppercase leading-relaxed tracking-[0.15em]">
-              Sample month — design only
-              <br />
-              <span className="mt-2 inline-block">Not live availability</span>
-            </p>
+            <p className="mt-8 text-[11px] uppercase tracking-[0.15em]">{calendar.label}</p>
 
-            <div
-              role="group"
-              aria-label="Sample month, design only"
-              className="mt-6 grid grid-cols-7 gap-y-1 text-center"
-            >
+            <div role="group" aria-label={calendar.label} className="mt-6 grid grid-cols-7 gap-y-1 text-center">
               {WEEKDAYS.map((w, i) => (
                 <span key={i} className="pb-3 text-[11px]" aria-hidden>
                   {w}
                 </span>
               ))}
-              {Array.from({ length: 30 }, (_, i) => i + 1).map((d) => (
+              {calendar.cells.map((c) => (
                 <button
-                  key={d}
+                  key={c.iso}
                   type="button"
-                  onClick={() => setDay(d)}
-                  aria-pressed={day === d}
-                  aria-label={`Sample day ${d}`}
+                  disabled={c.disabled}
+                  onClick={() => setDate(c.iso)}
+                  aria-pressed={date === c.iso}
+                  aria-label={fmtIso(c.iso)}
                   className={`mx-auto h-12 w-12 text-base font-light transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black md:w-[77px] ${
-                    day === d ? "bg-[#201f1d] text-white" : "hover:bg-white"
+                    date === c.iso
+                      ? "bg-[#201f1d] text-white"
+                      : c.disabled
+                        ? "cursor-not-allowed text-black/25"
+                        : "hover:bg-white"
                   }`}
                 >
-                  {d}
+                  {c.day}
                 </button>
               ))}
             </div>
 
             <p className="mt-8 text-[13px] font-medium">
-              {day
-                ? `Sample month / Day ${day} selected. All numbers are examples only.`
-                : "No date selected. All numbers are examples only."}
+              {date ? `${dateLabel} selected.` : "No date selected."}
             </p>
             <div className="mt-6">
-              <PrimaryButton disabled={!day} onClick={() => setStep("time")}>
-                {day ? "Continue to time →" : "Continue — disabled"}
+              <PrimaryButton disabled={!date} onClick={() => setStep("time")}>
+                {date ? "Continue to time →" : "Continue — choose a date"}
               </PrimaryButton>
             </div>
           </div>
@@ -210,15 +235,11 @@ export default function BookingFlow({
 
         {step === "time" && (
           <div>
-            <SummaryRow label="Example date" value={dateLabel} onChange={() => setStep("date")} />
+            <SummaryRow label="Date" value={dateLabel} onChange={() => setStep("date")} />
             <p className="mt-8 text-base font-light text-black/80 md:text-lg">
-              Example time controls only — not actual appointments.
+              Choose a preferred time. We will confirm availability by email.
             </p>
-            <div
-              role="radiogroup"
-              aria-label="Example times"
-              className="mt-6 grid gap-2 md:grid-cols-2"
-            >
+            <div role="radiogroup" aria-label="Preferred time" className="mt-6 grid gap-2 md:grid-cols-2">
               {TIMES.map((t) => {
                 const on = time === t;
                 return (
@@ -244,9 +265,7 @@ export default function BookingFlow({
                 );
               })}
             </div>
-            <p className="mt-6 text-[13px] font-medium">
-              Time zone — to be confirmed. Timezone is unknown.
-            </p>
+            <p className="mt-6 text-[13px] font-medium">Times shown in your time zone: {timeZone}.</p>
             <div className="mt-6 space-y-2">
               <PrimaryButton disabled={!time} onClick={() => setStep("details")}>
                 Continue to details →
@@ -273,50 +292,27 @@ export default function BookingFlow({
               >
                 <p className="text-[13px] font-medium">Please check your contact details</p>
                 <p className="mt-2 text-base font-light text-black/80">
-                  Example validation: {errorFields.join(" and ")} need
-                  {errorFields.length === 1 ? "s" : ""} attention. Nothing has
-                  been submitted.
+                  {errorFields.join(" and ")} need{errorFields.length === 1 ? "s" : ""} attention.
                 </p>
               </div>
             ) : (
               <p className="mb-6 text-base font-light leading-relaxed text-black/80 md:text-lg">
-                Your consultation details. No account signup is required. These
-                fields are static placeholders.
+                Your consultation details. No account is required.
               </p>
             )}
             <div className="space-y-6">
-              <Field
-                label="Name"
-                required
-                value={name}
-                onChange={setName}
-                placeholder="Your name"
-                error={errors.name}
-                autoComplete="name"
-              />
-              <Field
-                label="Email"
-                required
-                type="email"
-                value={email}
-                onChange={setEmail}
-                placeholder="Your email"
-                error={errors.email}
-                autoComplete="email"
-              />
-              <Field
-                label="Event context"
-                multiline
-                value={context}
-                onChange={setContext}
-                placeholder="A little about your occasion"
-              />
+              <Field label="Name" required value={name} onChange={setName} placeholder="Your name" error={errors.name} autoComplete="name" />
+              <Field label="Email" required type="email" value={email} onChange={setEmail} placeholder="Your email" error={errors.email} autoComplete="email" />
+              <Field label="Phone" type="tel" value={phone} onChange={setPhone} placeholder="Your phone number" autoComplete="tel" />
+              <Field label="Event context" multiline value={context} onChange={setContext} placeholder="A little about your occasion" />
+              {/* Honeypot: hidden from people, tempting to bots. */}
+              <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+                <label>
+                  Website
+                  <input type="text" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
+                </label>
+              </div>
             </div>
-            {errorFields.length > 0 && (
-              <p className="mt-6 text-[13px] font-medium">
-                No account signup is required for a consultation.
-              </p>
-            )}
             <div className="mt-6 space-y-2">
               <PrimaryButton type="submit">Continue to review →</PrimaryButton>
               <TextButton onClick={() => setStep("time")}>Back to time</TextButton>
@@ -327,22 +323,15 @@ export default function BookingFlow({
         {step === "review" && (
           <div>
             <p className="mb-8 text-base font-light text-black/80 md:text-lg">
-              Review the example details below. Nothing will be submitted.
+              Check your details, then send your request. We will reply by email to confirm.
             </p>
-            <SummaryRow label="Example date" value={dateLabel} onChange={() => setStep("date")} />
-            <SummaryRow label="Example time" value={timeLabel} onChange={() => setStep("time")} />
+            <SummaryRow label="Date" value={dateLabel} onChange={() => setStep("date")} />
+            <SummaryRow label="Time" value={timeLabel} onChange={() => setStep("time")} />
             <SummaryRow label="Contact details" value={contactLabel} onChange={() => setStep("details")} />
-            <SummaryRow
-              label="Event context"
-              value={context.trim() || "[Optional context placeholder]"}
-              onChange={() => setStep("details")}
-            />
-            <p className="mt-6 text-[11px] uppercase tracking-[0.15em]">
-              Demo action — no actual booking
-            </p>
-            <div className="mt-4 space-y-2">
-              <PrimaryButton onClick={() => setStep(demo === "failure" ? "failed" : "done")}>
-                Confirm consultation
+            <SummaryRow label="Event context" value={context.trim() || "—"} onChange={() => setStep("details")} />
+            <div className="mt-6 space-y-2">
+              <PrimaryButton onClick={confirm} disabled={sending}>
+                {sending ? "Sending…" : "Send request"}
               </PrimaryButton>
               <TextButton onClick={() => setStep("details")}>Back to details</TextButton>
             </div>
@@ -351,13 +340,12 @@ export default function BookingFlow({
 
         {step === "failed" && (
           <div className="pt-4">
-            <Eyebrow>Example error state</Eyebrow>
+            <Eyebrow>Something went wrong</Eyebrow>
             <p className="mt-6 text-3xl font-light leading-tight">
-              Your booking could not be completed.
+              Your request could not be sent.
             </p>
             <p className="mt-6 text-base font-light text-black/80">
-              You can try again or review the example details. This disconnected
-              demonstration has not created a reservation.
+              {failMessage || "Please check your connection and try again. Nothing has been saved."}
             </p>
             <div className="mt-10 space-y-2">
               <PrimaryButton onClick={() => setStep("review")}>Try again</PrimaryButton>
@@ -368,16 +356,16 @@ export default function BookingFlow({
 
         {step === "done" && (
           <div>
-            <Eyebrow>Prototype confirmation</Eyebrow>
-            <p className="mt-6 text-3xl font-light">No booking has been made.</p>
+            <Eyebrow>Thank you</Eyebrow>
+            <p className="mt-6 text-3xl font-light leading-tight">We have your request.</p>
             <p className="mt-5 text-base font-light text-black/80">
-              This is a static confirmation specimen, not a real consultation
-              confirmation.
+              We will email {email.trim()} to confirm a time. Until then, your
+              slot is a request, not a confirmed booking.
             </p>
             <div className="mt-8">
-              <SummaryRow label="EXAMPLE date" value={dateLabel} />
-              <SummaryRow label="EXAMPLE time" value={timeLabel} />
-              <SummaryRow label="EXAMPLE contact" value={contactLabel} />
+              <SummaryRow label="Requested date" value={dateLabel} />
+              <SummaryRow label="Requested time" value={timeLabel} />
+              <SummaryRow label="Contact" value={contactLabel} />
             </div>
             <div className="mt-6">
               <PrimaryButton onClick={onClose}>Close</PrimaryButton>
@@ -386,7 +374,9 @@ export default function BookingFlow({
         )}
       </div>
 
-      <DemoNote title="Design demo — not connected">{FLOW_NOTE}</DemoNote>
+      <DemoNote title="Your details">
+        We use these details only to respond to your request.
+      </DemoNote>
     </>
   );
 }

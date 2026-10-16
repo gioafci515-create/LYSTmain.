@@ -285,6 +285,26 @@ export function GhostButton({
   );
 }
 
+export function ComingSoon({
+  eyebrow,
+  title,
+  text,
+}: {
+  eyebrow: string;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="space-y-6">
+      <SectionTitle eyebrow={eyebrow} title={title} />
+      <Card className="max-w-xl">
+        <p className="text-[11px] uppercase tracking-[0.18em]">Not built yet</p>
+        <p className="mt-4 text-sm font-light leading-relaxed text-black/80">{text}</p>
+      </Card>
+    </div>
+  );
+}
+
 export function EmptyState({ text }: { text: string }) {
   return (
     <div className="border border-dashed border-[#d9cfc8] p-10 text-center text-sm font-light text-black/60">

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
 import ModalProvider from "./components/modal/ModalProvider";
+import Tracker from "./components/Tracker";
 import "./globals.css";
 
 const inter = Inter({
@@ -19,6 +21,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <ModalProvider>{children}</ModalProvider>
+        <Suspense fallback={null}>
+          <Tracker />
+        </Suspense>
       </body>
     </html>
   );

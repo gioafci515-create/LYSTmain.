@@ -1,15 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { getBrowserClient } from "@/lib/supabase/browser";
+import type { AdminData, Consultation } from "./data";
 import Consultations from "./Consultations";
-import Events from "./Events";
-import Guests from "./Guests";
 import Hosts from "./Hosts";
 import Overview from "./Overview";
 import Settings from "./Settings";
+import { ComingSoon } from "./ui";
+import AdminLogin from "./AdminLogin";
 
 type Section = "overview" | "bookings" | "hosts" | "events" | "guests" | "setup";
+type Phase = "checking" | "login" | "forbidden" | "error" | "ready";
 
 const icon = (d: string) => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
@@ -28,11 +31,73 @@ const NAV: { id: Section; label: string; icon: React.ReactNode }[] = [
 
 export default function AdminApp() {
   const [section, setSection] = useState<Section>("overview");
+  const [phase, setPhase] = useState<Phase>("checking");
+  const [data, setData] = useState<AdminData | null>(null);
+  const [email, setEmail] = useState("");
+
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/overview", { cache: "no-store" });
+      if (res.status === 401) return setPhase("login");
+      if (res.status === 403) return setPhase("forbidden");
+      if (!res.ok) return setPhase("error");
+      setData((await res.json()) as AdminData);
+      setPhase("ready");
+    } catch {
+      setPhase("error");
+    }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: u } = await getBrowserClient().auth.getUser();
+        if (cancelled) return;
+        if (!u.user) return setPhase("login");
+        setEmail(u.user.email ?? "");
+        await load();
+      } catch {
+        if (!cancelled) setPhase("error");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [load]);
+
+  const logout = async () => {
+    await getBrowserClient().auth.signOut();
+    setData(null);
+    setPhase("login");
+  };
 
   const go = (s: Section) => {
     setSection(s);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  const updateConsultation = (c: Consultation) =>
+    setData((d) => (d ? { ...d, consultations: d.consultations.map((x) => (x.id === c.id ? c : x)) } : d));
+
+  if (phase !== "ready") {
+    return (
+      <AdminGate
+        phase={phase}
+        email={email}
+        onSignedIn={async (e) => {
+          setEmail(e);
+          setPhase("checking");
+          await load();
+        }}
+        onRetry={() => {
+          setPhase("checking");
+          load();
+        }}
+        onLogout={logout}
+      />
+    );
+  }
 
   return (
     <div className="min-h-dvh md:flex">
@@ -59,32 +124,51 @@ export default function AdminApp() {
             );
           })}
         </nav>
-        <Link href="/" className="mt-auto text-[11px] uppercase tracking-[0.14em] underline-offset-4 hover:underline">
-          ← View website
-        </Link>
+        <div className="mt-auto space-y-3">
+          <p className="truncate text-xs text-black/60">{email}</p>
+          <button type="button" onClick={logout} className="text-[11px] uppercase tracking-[0.14em] underline-offset-4 hover:underline">
+            Log out
+          </button>
+          <Link href="/" className="block text-[11px] uppercase tracking-[0.14em] underline-offset-4 hover:underline">
+            ← View website
+          </Link>
+        </div>
       </aside>
 
       <div className="min-w-0 flex-1">
-        <div className="border-b border-[#e6dedb] bg-[#201f1d] px-5 py-2.5 text-center text-[10px] uppercase tracking-[0.18em] text-white md:px-10">
-          Sample data · not connected · no login yet
-        </div>
-
         <header className="flex items-center justify-between px-5 pt-5 md:hidden">
           <div>
             <p className="text-xl font-light tracking-tight">LYST</p>
             <p className="text-[10px] uppercase tracking-[0.2em] text-black/60">Admin</p>
           </div>
-          <Link href="/" className="flex h-11 items-center text-[11px] uppercase tracking-[0.14em] underline-offset-4 hover:underline">
-            Website ↗
-          </Link>
+          <div className="flex items-center gap-4">
+            <button type="button" onClick={logout} className="flex h-11 items-center text-[11px] uppercase tracking-[0.14em] underline-offset-4 hover:underline">
+              Log out
+            </button>
+            <Link href="/" className="flex h-11 items-center text-[11px] uppercase tracking-[0.14em] underline-offset-4 hover:underline">
+              Website ↗
+            </Link>
+          </div>
         </header>
 
         <main key={section} className="fade-up mx-auto max-w-[1280px] px-5 pb-28 pt-6 md:px-10 md:pb-16 md:pt-10">
-          {section === "overview" && <Overview goTo={go} />}
-          {section === "bookings" && <Consultations />}
-          {section === "hosts" && <Hosts />}
-          {section === "events" && <Events />}
-          {section === "guests" && <Guests />}
+          {section === "overview" && data && <Overview data={data} goTo={go} onRefresh={load} />}
+          {section === "bookings" && data && <Consultations items={data.consultations} onChange={updateConsultation} />}
+          {section === "hosts" && data && <Hosts hosts={data.hosts} />}
+          {section === "events" && (
+            <ComingSoon
+              eyebrow="Invitations"
+              title="Events"
+              text="Hosts cannot create events on the website yet, so there is nothing to show here. When event creation is built, every event, its guest list and RSVPs will appear in this tab."
+            />
+          )}
+          {section === "guests" && (
+            <ComingSoon
+              eyebrow="RSVPs"
+              title="Guests"
+              text="Guest RSVPs are collected through event invitations, which are not built yet. Once they are, every response, plus-one and dietary note will be listed here."
+            />
+          )}
           {section === "setup" && <Settings />}
         </main>
       </div>
@@ -115,5 +199,55 @@ export default function AdminApp() {
         })}
       </nav>
     </div>
+  );
+}
+
+function AdminGate({
+  phase,
+  email,
+  onSignedIn,
+  onRetry,
+  onLogout,
+}: {
+  phase: Exclude<Phase, "ready">;
+  email: string;
+  onSignedIn: (email: string) => void;
+  onRetry: () => void;
+  onLogout: () => void;
+}) {
+  return (
+    <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col justify-center px-6 py-16">
+      <p className="text-2xl font-light tracking-tight">LYST</p>
+      <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-black/60">Admin</p>
+
+      {phase === "checking" && <p className="mt-12 text-sm font-light text-black/60" role="status">Checking your session…</p>}
+
+      {phase === "login" && <AdminLogin onSignedIn={onSignedIn} />}
+
+      {phase === "forbidden" && (
+        <div className="mt-12">
+          <h1 className="text-3xl font-light tracking-tight">No admin access.</h1>
+          <p className="mt-4 text-base font-light text-black/80">
+            {email ? `${email} is signed in, but` : "This account"} is not an admin. Ask the site owner to
+            grant the admin role, then log in again.
+          </p>
+          <button type="button" onClick={onLogout} className="mt-8 h-14 w-full border border-[#201f1d] text-[11px] uppercase tracking-[0.15em] hover:bg-white">
+            Log out
+          </button>
+        </div>
+      )}
+
+      {phase === "error" && (
+        <div className="mt-12">
+          <h1 className="text-3xl font-light tracking-tight">Could not load.</h1>
+          <p className="mt-4 text-base font-light text-black/80">
+            The dashboard data could not be loaded. Check your connection and the Supabase settings, then retry.
+          </p>
+          <button type="button" onClick={onRetry} className="mt-8 h-14 w-full bg-[#201f1d] text-[11px] uppercase tracking-[0.15em] text-white hover:bg-black">
+            Retry
+          </button>
+        </div>
+      )}
+    </main>
   );
 }

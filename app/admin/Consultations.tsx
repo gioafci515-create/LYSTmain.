@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { consultations as seed, sourceLabel, type Consultation, type ConsultationStatus } from "./data";
+import { sourceLabel } from "@/lib/source";
+import type { Consultation, ConsultationStatus } from "./data";
 import {
   Card,
   Chip,
@@ -18,13 +19,57 @@ import {
 
 type Filter = "all" | ConsultationStatus;
 const STATUSES: ConsultationStatus[] = ["new", "confirmed", "completed", "cancelled"];
+const stamp = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" });
 
-export default function Consultations() {
-  const [items, setItems] = useState<Consultation[]>(seed);
+function NotesBox({
+  saved,
+  saving,
+  onSave,
+}: {
+  saved: string;
+  saving: boolean;
+  onSave: (text: string) => void;
+}) {
+  const [notes, setNotes] = useState(saved);
+  return (
+    <>
+      <label htmlFor="notes" className="mt-8 block text-[11px] uppercase tracking-[0.18em]">Private notes</label>
+      <textarea
+        id="notes"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        rows={3}
+        className="mt-3 block w-full border border-[#e6dedb] bg-white p-3 text-sm font-light focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+      />
+      <div className="mt-2">
+        <GhostButton disabled={saving || notes === saved} onClick={() => onSave(notes)}>
+          {saving ? "Saving…" : "Save notes"}
+        </GhostButton>
+      </div>
+    </>
+  );
+}
+
+export default function Consultations({
+  items,
+  onChange,
+}: {
+  items: Consultation[];
+  onChange: (c: Consultation) => void;
+}) {
   const [filter, setFilter] = useState<Filter>("all");
   const [q, setQ] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const open = items.find((c) => c.id === openId) ?? null;
+
+  const openCard = (id: string) => {
+    setError("");
+    setOpenId(id);
+  };
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -32,17 +77,31 @@ export default function Consultations() {
       (c) =>
         (filter === "all" || c.status === filter) &&
         (!needle ||
-          [c.name, c.email, c.eventType, c.id, sourceLabel[c.source]]
+          [c.name, c.email, c.phone ?? "", c.event_context ?? "", sourceLabel[c.source]]
             .join(" ")
             .toLowerCase()
             .includes(needle)),
     );
   }, [items, filter, q]);
 
-  const open = items.find((c) => c.id === openId) ?? null;
-
-  const setStatus = (id: string, status: ConsultationStatus) =>
-    setItems((prev) => prev.map((c) => (c.id === id ? { ...c, status } : c)));
+  async function patch(id: string, body: { status?: ConsultationStatus; admin_notes?: string }) {
+    setSaving(true);
+    setError("");
+    try {
+      const res = await fetch(`/api/admin/consultations/${id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error();
+      const { consultation } = (await res.json()) as { consultation: Consultation };
+      onChange(consultation);
+    } catch {
+      setError("Could not save. Check your connection and try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function copyEmail(email: string) {
     try {
@@ -63,8 +122,8 @@ export default function Consultations() {
           <GhostButton
             onClick={() =>
               downloadCsv("consultations.csv", [
-                ["ID", "Name", "Email", "Phone", "Date", "Time", "Event type", "Guests", "Budget", "Source", "Status"],
-                ...shown.map((c) => [c.id, c.name, c.email, c.phone, c.date, c.time, c.eventType, c.guests, c.budget, sourceLabel[c.source], c.status]),
+                ["Submitted", "Name", "Email", "Phone", "Requested date", "Requested time", "Source", "Status", "Event context", "Notes"],
+                ...shown.map((c) => [c.created_at, c.name, c.email, c.phone ?? "", c.preferred_date ?? "", c.preferred_time ?? "", sourceLabel[c.source], c.status, c.event_context ?? "", c.admin_notes ?? ""]),
               ])
             }
           >
@@ -73,7 +132,7 @@ export default function Consultations() {
         }
       />
 
-      <SearchBox value={q} onChange={setQ} placeholder="Search name, email, event type, source…" />
+      <SearchBox value={q} onChange={setQ} placeholder="Search name, email, phone, notes, source…" />
       <FilterChips<Filter>
         label="Filter by status"
         value={filter}
@@ -84,27 +143,29 @@ export default function Consultations() {
         ]}
       />
 
-      {shown.length === 0 ? (
+      {items.length === 0 ? (
+        <EmptyState text="No consultation requests yet. They appear here as soon as someone submits the form." />
+      ) : shown.length === 0 ? (
         <EmptyState text="No consultations match your search." />
       ) : (
         <div className="grid gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-3" aria-live="polite">
           {shown.map((c, i) => (
             <Stagger key={c.id} i={i}>
-              <Card onClick={() => setOpenId(c.id)} label={`Open ${c.name}`}>
+              <Card onClick={() => openCard(c.id)} label={`Open ${c.name}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-[10px] uppercase tracking-[0.18em] text-black/50">{c.id}</p>
+                    <p className="text-[10px] uppercase tracking-[0.18em] text-black/50">{stamp.format(new Date(c.created_at))}</p>
                     <p className="mt-1 truncate text-lg font-light">{c.name}</p>
                   </div>
                   <Chip kind={c.status} />
                 </div>
                 <dl className="mt-4 grid grid-cols-2 gap-y-2 text-xs">
-                  <dt className="text-black/50">When</dt>
-                  <dd>{fmtDate(c.date)} · {c.time}</dd>
-                  <dt className="text-black/50">Event</dt>
-                  <dd>{c.eventType} · {c.guests} guests</dd>
+                  <dt className="text-black/50">Requested</dt>
+                  <dd>{c.preferred_date ? fmtDate(c.preferred_date) : "—"} · {c.preferred_time?.split(" ")[0] ?? "—"}</dd>
                   <dt className="text-black/50">Source</dt>
                   <dd>{sourceLabel[c.source]}</dd>
+                  <dt className="text-black/50">Email</dt>
+                  <dd className="truncate">{c.email}</dd>
                 </dl>
               </Card>
             </Stagger>
@@ -116,7 +177,7 @@ export default function Consultations() {
         {open && (
           <div>
             <div className="flex items-start justify-between">
-              <p className="text-[11px] uppercase tracking-[0.2em]">{open.id}</p>
+              <p className="text-[11px] uppercase tracking-[0.2em]">{stamp.format(new Date(open.created_at))}</p>
               <button
                 type="button"
                 onClick={() => setOpenId(null)}
@@ -134,23 +195,20 @@ export default function Consultations() {
             <dl className="mt-6 divide-y divide-[#e6dedb] border-y border-[#e6dedb] text-sm">
               {[
                 ["Email", open.email],
-                ["Phone", open.phone],
-                ["Requested slot", `${fmtDate(open.date)} · ${open.time}`],
-                ["Event type", open.eventType],
-                ["Guests", String(open.guests)],
-                ["Budget", open.budget],
+                ["Phone", open.phone ?? "—"],
+                ["Requested date", open.preferred_date ? fmtDate(open.preferred_date) : "—"],
+                ["Requested time", open.preferred_time ?? "—"],
                 ["Heard about LYST via", sourceLabel[open.source]],
-                ["Submitted", fmtDate(open.createdAt)],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4 py-3">
-                  <dt className="text-black/60">{k}</dt>
-                  <dd className="text-right">{v}</dd>
+                  <dt className="shrink-0 text-black/60">{k}</dt>
+                  <dd className="break-words text-right">{v}</dd>
                 </div>
               ))}
             </dl>
 
             <p className="mt-6 text-[11px] uppercase tracking-[0.18em]">Event context</p>
-            <p className="mt-2 text-sm font-light leading-relaxed text-black/80">{open.context}</p>
+            <p className="mt-2 whitespace-pre-wrap text-sm font-light leading-relaxed text-black/80">{open.event_context || "—"}</p>
 
             <p className="mt-8 text-[11px] uppercase tracking-[0.18em]">Update status</p>
             <div className="mt-3 grid grid-cols-2 gap-2">
@@ -159,8 +217,9 @@ export default function Consultations() {
                   key={s}
                   type="button"
                   aria-pressed={open.status === s}
-                  onClick={() => setStatus(open.id, s)}
-                  className={`h-12 border text-[11px] uppercase tracking-[0.12em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black ${
+                  disabled={saving}
+                  onClick={() => patch(open.id, { status: s })}
+                  className={`h-12 border text-[11px] uppercase tracking-[0.12em] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:opacity-60 ${
                     open.status === s ? "border-[#201f1d] bg-[#201f1d] text-white" : "border-[#e6dedb] bg-white hover:border-black"
                   }`}
                 >
@@ -168,6 +227,13 @@ export default function Consultations() {
                 </button>
               ))}
             </div>
+
+            <NotesBox
+              key={open.id}
+              saved={open.admin_notes ?? ""}
+              saving={saving}
+              onSave={(text) => patch(open.id, { admin_notes: text })}
+            />
 
             <div className="mt-6 grid grid-cols-2 gap-2">
               <a
@@ -184,9 +250,7 @@ export default function Consultations() {
                 {copied ? "Copied ✓" : "Copy email"}
               </button>
             </div>
-            <p className="mt-4 text-xs text-black/50">
-              Status changes are kept in this browser tab only until a backend is connected.
-            </p>
+            {error && <p role="alert" className="mt-4 border-l-2 border-black pl-3 text-xs font-medium">{error}</p>}
           </div>
         )}
       </Sheet>

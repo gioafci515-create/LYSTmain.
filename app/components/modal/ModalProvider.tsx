@@ -11,7 +11,7 @@ import {
   useState,
 } from "react";
 import AuthFlow, { type AuthView } from "./AuthFlow";
-import BookingFlow, { type DemoState } from "./BookingFlow";
+import BookingFlow from "./BookingFlow";
 
 type Open = { kind: "booking" } | { kind: "auth"; view: AuthView } | null;
 
@@ -31,14 +31,10 @@ export function useModal() {
 export default function ModalProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState<Open>(null);
   const [session, setSession] = useState(0);
-  const [demo, setDemo] = useState<DemoState>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
-  // ?demo=failure | ?demo=empty previews the error and empty booking states.
   const show = useCallback((next: Exclude<Open, null>) => {
-    const d = new URLSearchParams(window.location.search).get("demo");
-    setDemo(d === "failure" || d === "empty" ? d : null);
     setSession((s) => s + 1);
     setOpen(next);
   }, []);
@@ -76,7 +72,7 @@ export default function ModalProvider({ children }: { children: React.ReactNode 
         className="m-auto h-dvh max-h-dvh w-full max-w-none overflow-y-auto bg-[#f6f5f1] p-6 text-black backdrop:bg-black/50 md:h-auto md:max-h-[calc(100dvh-48px)] md:max-w-[640px] md:p-12"
       >
         {open?.kind === "booking" && (
-          <BookingFlow key={session} titleId={titleId} demo={demo} onClose={close} />
+          <BookingFlow key={session} titleId={titleId} onClose={close} />
         )}
         {open?.kind === "auth" && (
           <AuthFlow key={session} titleId={titleId} initialView={open.view} onClose={close} />
