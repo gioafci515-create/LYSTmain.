@@ -2,26 +2,18 @@
 
 import { useModal } from "./ModalProvider";
 
-type Action = "booking" | "login" | "signup" | "account";
-
 export default function ModalTrigger({
-  action,
   className = "",
   children,
+  tabIndex,
 }: {
-  action: Action;
   className?: string;
   children: React.ReactNode;
+  tabIndex?: number;
 }) {
   const modal = useModal();
   return (
-    <button
-      type="button"
-      className={className}
-      onClick={() =>
-        action === "booking" ? modal.openBooking() : modal.openAuth(action)
-      }
-    >
+    <button type="button" className={className} tabIndex={tabIndex} onClick={() => modal.openBooking()}>
       {children}
     </button>
   );

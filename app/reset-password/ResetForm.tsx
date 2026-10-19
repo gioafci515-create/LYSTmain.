@@ -37,13 +37,13 @@ export default function ResetForm() {
 
   if (done) {
     return (
-      <div className="mt-10">
+      <div>
         <p className="text-2xl font-light">Your password has been updated.</p>
         <Link
-          href="/"
+          href="/account"
           className="mt-8 flex h-14 w-full items-center justify-center bg-[#201f1d] text-[11px] uppercase tracking-[0.15em] text-white hover:bg-black"
         >
-          Back to the website
+          Go to your account
         </Link>
       </div>
     );
@@ -52,7 +52,7 @@ export default function ResetForm() {
   return (
     <form
       noValidate
-      className="mt-10 space-y-6"
+      className="space-y-6"
       onSubmit={(e) => {
         e.preventDefault();
         submit();

@@ -12,44 +12,31 @@ const steps = [
 
 export default function Experience() {
   return (
-    <section
-      id="experience"
-      className="px-6 py-16 md:px-10 md:py-20 xl:px-20 xl:py-20"
-    >
+    <section id="experience" className="px-6 py-16 md:px-10 md:py-20 xl:px-20 xl:py-20">
       <div className="mx-auto max-w-[1760px]">
-        <Reveal>
-          <SectionHeading
-            label="04 / The experience"
-            intro="One thoughtfully connected experience, unfolding before, during and after your event."
-          >
-            From the first invitation
-            <br className="hidden xl:block" /> to the last memory.
-          </SectionHeading>
-        </Reveal>
+        <SectionHeading
+          label="04 / The experience"
+          lines={["From the first invitation", "to the last memory."]}
+          breakClass="hidden xl:block"
+          intro="One thoughtfully connected experience, unfolding before, during and after your event."
+        />
 
-        <Reveal className="mt-12">
-          <div className="overflow-hidden">
-            <Photo
-              src="/images/experience.jpg"
-              label="Friends laughing together on a terrace at sunset above a harbour"
-              className="aspect-[342/192] w-full transition-transform duration-[1400ms] ease-out hover:scale-[1.03] md:aspect-video xl:aspect-[1760/420]"
-            />
-          </div>
+        <Reveal variant="photo" className="mt-12">
+          <Photo
+            src="/images/experience-hd.jpg"
+            label="Friends laughing together on a terrace at sunset above a harbour"
+            sizes="100vw"
+            className="aspect-[342/192] w-full md:aspect-video xl:aspect-[1760/420]"
+          />
         </Reveal>
 
         <ol className="mt-10 grid md:grid-cols-3 md:gap-x-6 xl:mt-12 xl:grid-cols-5">
           {steps.map((s, i) => (
-            <li
-              key={s.title}
-              className="border-t border-[#e6dedb] md:border-[#e6cfd0]"
-            >
-              <Reveal delay={i * 80} className="py-6 md:pb-10">
-                <p className="text-[10px] tracking-wide">
-                  {String(i + 1).padStart(2, "0")}
-                </p>
-                <h3 className="mt-5 text-[11px] font-medium uppercase tracking-[0.2em]">
-                  {s.title}
-                </h3>
+            <li key={s.title}>
+              <Reveal delay={i * 90} className="pb-6 md:pb-10">
+                <div className="rule h-px w-full bg-[#e6dedb] md:bg-[#e6cfd0]" />
+                <p className="mt-6 text-[10px] tracking-wide">{String(i + 1).padStart(2, "0")}</p>
+                <h3 className="mt-5 text-[11px] font-medium uppercase tracking-[0.2em]">{s.title}</h3>
                 <p className="mt-4 max-w-[260px] text-sm font-light leading-relaxed text-black/80 md:text-base">
                   {s.body}
                 </p>
