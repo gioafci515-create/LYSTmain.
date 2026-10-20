@@ -44,7 +44,7 @@ export default function Consultation() {
           </p>
         </Reveal>
         <Reveal delay={500}>
-          <ModalTrigger className="mt-8 flex h-14 w-full items-center justify-center gap-2 border border-white/80 text-[11px] uppercase tracking-[0.12em] transition-colors hover:bg-white hover:text-black xl:w-[280px]">
+          <ModalTrigger className="mt-8 flex h-14 w-full items-center justify-center gap-2 glass-hover border border-white/80 text-[11px] uppercase tracking-[0.12em] xl:w-[280px]">
             Book a consultation <span aria-hidden>&#8599;</span>
           </ModalTrigger>
         </Reveal>

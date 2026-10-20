@@ -1,23 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import TopLink from "./TopLink";
-import ModalTrigger from "./modal/ModalTrigger";
 import Photo from "./Photo";
 import RevealText from "./RevealText";
 
 const navLink =
   "ulink flex h-11 items-center text-[13px] font-medium uppercase focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white";
-
-// One booking button per screen: it lives in the header (as in the Figma header).
-function BookButton({ className = "" }: { className?: string }) {
-  return (
-    <ModalTrigger
-      className={`flex items-center justify-center gap-2 border border-white text-xs font-medium uppercase tracking-[0.09em] text-white transition-colors hover:bg-white hover:text-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${className}`}
-    >
-      Book a consultation <span aria-hidden>&#8599;</span>
-    </ModalTrigger>
-  );
-}
 
 export default function Hero() {
   return (
@@ -73,14 +61,7 @@ export default function Hero() {
                 <span className="ulink-text">Account</span>
               </Link>
             </div>
-            <div className="ml-10 hidden md:block">
-              <BookButton className="h-[58px] w-[280px]" />
-            </div>
           </nav>
-        </div>
-
-        <div className="md:hidden">
-          <BookButton className="h-12 w-full" />
         </div>
       </header>
 

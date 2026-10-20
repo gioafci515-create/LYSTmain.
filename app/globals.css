@@ -209,6 +209,21 @@ html {
 .island[data-tone="dark"] .island-logo {
   filter: none;
 }
+/* Buttons over dark photos: on hover they take the island's dark glass */
+.glass-hover {
+  transition:
+    background-color 0.4s ease,
+    border-color 0.4s ease,
+    backdrop-filter 0.4s ease;
+}
+@media (hover: hover) {
+  .glass-hover:hover {
+    background: rgb(11 11 11 / 0.42);
+    border-color: rgb(255 255 255 / 0.18);
+    -webkit-backdrop-filter: blur(18px) saturate(1.15);
+    backdrop-filter: blur(18px) saturate(1.15);
+  }
+}
 .island[data-mode="compact"],
 .island[data-mode="expanded"] {
   opacity: 1;
