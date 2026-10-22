@@ -38,6 +38,8 @@ const nextConfig: NextConfig = {
   },
   partialPrefetching: true,
   poweredByHeader: false,
+  // Dev logging prints Server Action arguments, which would put passwords from app/auth/actions.ts in the terminal.
+  logging: { serverFunctions: false },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
