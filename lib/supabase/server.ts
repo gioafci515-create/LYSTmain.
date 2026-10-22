@@ -4,6 +4,8 @@ import { cookies } from "next/headers";
 import { connection } from "next/server";
 
 // Per-request client acting as the signed-in user (RLS applies).
+// This is the only Supabase client: the session lives in httpOnly cookies that browser
+// JavaScript cannot read, and every auth call goes through app/auth/actions.ts.
 export async function createUserClient() {
   // Read cookies first: it marks the caller as request-time only, so the build never runs it
   // (and a deploy can't fail just because the Supabase keys are missing at build time).
@@ -16,7 +18,14 @@ export async function createUserClient() {
       getAll: () => store.getAll(),
       setAll(list) {
         try {
-          list.forEach(({ name, value, options }) => store.set(name, value, options));
+          list.forEach(({ name, value, options }) =>
+            store.set(name, value, {
+              ...options,
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "lax",
+            }),
+          );
         } catch {
           // Called from a context that cannot set cookies; session refresh happens on the next request.
         }

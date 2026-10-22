@@ -1,0 +1,2 @@
+# Git hooks are shell scripts: CRLF would break the shebang on macOS/Linux.
+.githooks/* text eol=lf

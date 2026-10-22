@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { getBrowserClient } from "@/lib/supabase/browser";
+import { getAccount, signOut } from "@/app/auth/actions";
 import type { AdminData, Consultation } from "./data";
 import Consultations from "./Consultations";
 import Hosts from "./Hosts";
@@ -52,10 +52,10 @@ export default function AdminApp() {
     let cancelled = false;
     (async () => {
       try {
-        const { data: u } = await getBrowserClient().auth.getUser();
+        const account = await getAccount();
         if (cancelled) return;
-        if (!u.user) return setPhase("login");
-        setEmail(u.user.email ?? "");
+        if (!account) return setPhase("login");
+        setEmail(account.email);
         await load();
       } catch {
         if (!cancelled) setPhase("error");
@@ -67,7 +67,7 @@ export default function AdminApp() {
   }, [load]);
 
   const logout = async () => {
-    await getBrowserClient().auth.signOut();
+    await signOut();
     setData(null);
     setPhase("login");
   };

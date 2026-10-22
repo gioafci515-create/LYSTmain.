@@ -142,7 +142,7 @@ export default function Overview({
           <p className="text-[11px] uppercase tracking-[0.18em]">Visitor statistics need one more step</p>
           <p className="mt-3 text-sm font-light leading-relaxed text-black/80">
             Re-run <code>supabase/schema.sql</code> in the Supabase SQL Editor to add the statistics function, then
-            press Refresh. {data.statsError && <span className="block text-xs text-black/50">Detail: {data.statsError}</span>}
+            press Refresh.
           </p>
         </Card>
       )}

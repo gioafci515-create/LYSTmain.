@@ -32,12 +32,13 @@ export async function GET() {
     if (idx >= 0 && idx < 12) weekly[idx] += 1;
   }
 
+  // stats is null until the admin_stats SQL function has been created. The DB error stays in the server log.
+  if (stats.error) console.error("admin_stats failed", stats.error);
+
   return Response.json({
     consultations: consultations.data,
     hosts: hosts.data,
     weekly,
-    // stats is null until the admin_stats SQL function has been created.
     stats: stats.error ? null : stats.data,
-    statsError: stats.error ? stats.error.message : null,
   });
 }

@@ -1,0 +1,9 @@
+#!/bin/sh
+# Blocks commits that contain secrets (CLAUDE.md, security rules).
+# `npm install` enables this folder as the hooks path (see "prepare" in package.json).
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: gitleaks is not installed, so staged changes can't be checked for secrets." >&2
+  echo "Install it (Windows: winget install Gitleaks.Gitleaks, macOS: brew install gitleaks), then commit again." >&2
+  exit 1
+fi
+exec gitleaks git --pre-commit --staged --redact --no-banner

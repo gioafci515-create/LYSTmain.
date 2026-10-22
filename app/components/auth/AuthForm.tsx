@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { getBrowserClient } from "@/lib/supabase/browser";
+import { getAccount, requestPasswordReset, signIn, signUp } from "@/app/auth/actions";
 import { Field, PrimaryButton } from "../modal/ui";
 
 type View = "login" | "signup" | "forgot";
@@ -13,16 +13,6 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const textLink =
   "mx-auto block w-fit px-2 py-3 text-[11px] uppercase tracking-[0.15em] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";
-
-function friendly(message: string) {
-  const m = message.toLowerCase();
-  if (m.includes("invalid login")) return "Email or password is incorrect.";
-  if (m.includes("email not confirmed")) return "Please confirm your email first. Check your inbox for our message.";
-  if (m.includes("already registered") || m.includes("already been registered")) return "An account with this email already exists. Log in instead.";
-  if (m.includes("rate limit") || m.includes("too many")) return "Too many attempts. Please wait a few minutes and try again.";
-  if (m.includes("password")) return message;
-  return "Something went wrong. Please try again.";
-}
 
 /** Shows messages passed back from email links, e.g. /login?error=link. */
 export function LinkNotice() {
@@ -52,10 +42,9 @@ export default function AuthForm({ view }: { view: View }) {
   useEffect(() => {
     if (view === "forgot") return;
     let cancelled = false;
-    getBrowserClient()
-      .auth.getUser()
-      .then(({ data }: { data: { user: { id: string } | null } }) => {
-        if (!cancelled && data.user) router.replace("/account");
+    getAccount()
+      .then((account) => {
+        if (!cancelled && account) router.replace("/account");
       })
       .catch(() => {});
     return () => {
@@ -93,40 +82,28 @@ export default function AuthForm({ view }: { view: View }) {
     }
   }
 
-  async function goAfterSignIn(userId: string) {
-    const { data: p } = await getBrowserClient().from("profiles").select("role").eq("id", userId).maybeSingle();
-    router.push(p?.role === "admin" ? "/admin" : "/account");
+  function goAfterSignIn(role: "admin" | "host") {
+    router.push(role === "admin" ? "/admin" : "/account");
     router.refresh();
   }
 
   const submit = () =>
     run(async () => {
-      const sb = getBrowserClient();
       if (view === "login") {
         if (!validate(["email", "password"])) return;
-        const { data, error } = await sb.auth.signInWithPassword({ email: email.trim(), password });
-        if (error || !data.user) return setFailure(friendly(error?.message ?? ""));
-        await goAfterSignIn(data.user.id);
+        const res = await signIn(email.trim(), password);
+        if ("error" in res) return setFailure(res.error);
+        goAfterSignIn(res.role);
       } else if (view === "signup") {
         if (!validate(["name", "email", "password", "age"], 8)) return;
-        const { data, error } = await sb.auth.signUp({
-          email: email.trim(),
-          password,
-          options: {
-            // age_confirmed_16 is stored as profiles.age_confirmed_at by the signup trigger (supabase/schema.sql).
-            data: { full_name: name.trim(), age_confirmed_16: true },
-            emailRedirectTo: `${window.location.origin}/auth/callback?next=/account`,
-          },
-        });
-        if (error) return setFailure(friendly(error.message));
-        if (data.session && data.user) return goAfterSignIn(data.user.id);
+        const res = await signUp({ name: name.trim(), email: email.trim(), password, ageConfirmed });
+        if ("error" in res) return setFailure(res.error);
+        if (res.signedIn) return goAfterSignIn("host");
         setRegistered(true);
       } else {
         if (!validate(["email"])) return;
-        const { error } = await sb.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
-        });
-        if (error) return setFailure(friendly(error.message));
+        const res = await requestPasswordReset(email.trim());
+        if ("error" in res) return setFailure(res.error);
         setNotice("If an account exists for that email, a reset link is on its way. Check your inbox and spam folder.");
       }
     });

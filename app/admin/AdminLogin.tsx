@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getBrowserClient } from "@/lib/supabase/browser";
+import { signIn } from "@/app/auth/actions";
 import { Field, PrimaryButton } from "../components/modal/ui";
 
 export default function AdminLogin({ onSignedIn }: { onSignedIn: (email: string) => void }) {
@@ -15,19 +15,9 @@ export default function AdminLogin({ onSignedIn }: { onSignedIn: (email: string)
     setBusy(true);
     setError("");
     try {
-      const { data, error: err } = await getBrowserClient().auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-      if (err || !data.user) {
-        setError(
-          err?.message.toLowerCase().includes("not confirmed")
-            ? "Please confirm your email first."
-            : "Email or password is incorrect.",
-        );
-      } else {
-        onSignedIn(data.user.email ?? email.trim());
-      }
+      const res = await signIn(email.trim(), password);
+      if ("error" in res) setError(res.error);
+      else onSignedIn(email.trim());
     } catch {
       setError("We could not reach the server. Please try again.");
     } finally {

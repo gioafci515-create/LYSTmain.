@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { getBrowserClient } from "@/lib/supabase/browser";
+import { updatePassword } from "@/app/auth/actions";
 import { Field, PrimaryButton } from "../components/modal/ui";
 
 export default function ResetForm() {
@@ -18,16 +18,9 @@ export default function ResetForm() {
     setMessage("");
     setBusy(true);
     try {
-      const { error: err } = await getBrowserClient().auth.updateUser({ password });
-      if (err) {
-        setMessage(
-          err.message.toLowerCase().includes("session")
-            ? "This reset link has expired. Request a new one from the log-in screen."
-            : "We could not update your password. Please try again.",
-        );
-      } else {
-        setDone(true);
-      }
+      const res = await updatePassword(password);
+      if ("error" in res) setMessage(res.error);
+      else setDone(true);
     } catch {
       setMessage("We could not reach the server. Please try again.");
     } finally {

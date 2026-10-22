@@ -39,5 +39,4 @@ export type AdminData = {
   hosts: Profile[];
   weekly: number[];
   stats: Stats | null;
-  statsError: string | null;
 };

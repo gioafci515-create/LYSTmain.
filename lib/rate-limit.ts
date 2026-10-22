@@ -19,9 +19,10 @@ export function rateLimited(key: string, max: number, windowMs: number): boolean
 }
 
 export function clientIp(req: Request): string {
-  return (
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    req.headers.get("x-real-ip") ||
-    "unknown"
-  );
+  return ipFromHeaders(req.headers);
+}
+
+// For Server Actions, which get headers() instead of a Request.
+export function ipFromHeaders(h: { get(name: string): string | null }): string {
+  return h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip") || "unknown";
 }

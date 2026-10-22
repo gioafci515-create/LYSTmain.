@@ -3,9 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getBrowserClient } from "@/lib/supabase/browser";
-
-type Account = { email: string; name: string | null; role: string; since: string };
+import { getAccount, signOut, type Account } from "@/app/auth/actions";
 
 const since = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
@@ -19,22 +17,10 @@ export default function AccountView() {
     let cancelled = false;
     (async () => {
       try {
-        const sb = getBrowserClient();
-        const { data } = await sb.auth.getUser();
+        const a = await getAccount();
         if (cancelled) return;
-        if (!data.user) return router.replace("/login");
-        const { data: p } = await sb
-          .from("profiles")
-          .select("full_name, role, created_at")
-          .eq("id", data.user.id)
-          .maybeSingle();
-        if (cancelled) return;
-        setAccount({
-          email: data.user.email ?? "",
-          name: p?.full_name ?? (data.user.user_metadata?.full_name as string | undefined) ?? null,
-          role: p?.role ?? "host",
-          since: p?.created_at ?? data.user.created_at,
-        });
+        if (!a) return router.replace("/login");
+        setAccount(a);
       } catch {
         if (!cancelled) setFailed(true);
       }
@@ -47,7 +33,7 @@ export default function AccountView() {
   async function logout() {
     setBusy(true);
     try {
-      await getBrowserClient().auth.signOut();
+      await signOut();
     } finally {
       router.push("/");
       router.refresh();
