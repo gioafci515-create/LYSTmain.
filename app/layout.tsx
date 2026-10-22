@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { Suspense } from "react";
 import ModalProvider from "./components/modal/ModalProvider";
 import Tracker from "./components/Tracker";
 import "./globals.css";
 
-const inter = Inter({
+// Self-hosted: no request to Google from the browser or the build. Inter is SIL OFL, see fonts/Inter-OFL.txt.
+const inter = localFont({
+  src: "./fonts/InterVariable-latin.woff2",
   variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: "100 900",
+  display: "swap",
 });
 
 export const metadata: Metadata = {

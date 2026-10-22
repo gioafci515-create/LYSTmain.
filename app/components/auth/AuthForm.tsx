@@ -7,7 +7,7 @@ import { getBrowserClient } from "@/lib/supabase/browser";
 import { Field, PrimaryButton } from "../modal/ui";
 
 type View = "login" | "signup" | "forgot";
-type Errors = { name?: string; email?: string; password?: string };
+type Errors = { name?: string; email?: string; password?: string; age?: string };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -40,6 +40,7 @@ export default function AuthForm({ view }: { view: View }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [failure, setFailure] = useState("");
   const [notice, setNotice] = useState("");
@@ -74,6 +75,7 @@ export default function AuthForm({ view }: { view: View }) {
       if (!password) next.password = "Enter your password.";
       else if (password.length < minPassword) next.password = `Use at least ${minPassword} characters.`;
     }
+    if (fields.includes("age") && !ageConfirmed) next.age = "Host accounts are for people aged 16 or older.";
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -106,12 +108,13 @@ export default function AuthForm({ view }: { view: View }) {
         if (error || !data.user) return setFailure(friendly(error?.message ?? ""));
         await goAfterSignIn(data.user.id);
       } else if (view === "signup") {
-        if (!validate(["name", "email", "password"], 8)) return;
+        if (!validate(["name", "email", "password", "age"], 8)) return;
         const { data, error } = await sb.auth.signUp({
           email: email.trim(),
           password,
           options: {
-            data: { full_name: name.trim() },
+            // age_confirmed_16 is stored as profiles.age_confirmed_at by the signup trigger (supabase/schema.sql).
+            data: { full_name: name.trim(), age_confirmed_16: true },
             emailRedirectTo: `${window.location.origin}/auth/callback?next=/account`,
           },
         });
@@ -147,7 +150,7 @@ export default function AuthForm({ view }: { view: View }) {
     );
   }
 
-  const errorList = [errors.name && "Name", errors.email && "Email", errors.password && "Password"].filter(Boolean);
+  const errorList = [errors.name && "Name", errors.email && "Email", errors.password && "Password", errors.age && "Age confirmation"].filter(Boolean);
   const intro = "mb-6 text-base font-light leading-relaxed text-black/80 md:text-lg";
 
   return (
@@ -191,6 +194,27 @@ export default function AuthForm({ view }: { view: View }) {
             error={errors.password}
             autoComplete={view === "signup" ? "new-password" : "current-password"}
           />
+        )}
+        {view === "signup" && (
+          <div>
+            <label className="flex cursor-pointer items-start gap-3 text-base font-light leading-snug">
+              <input
+                type="checkbox"
+                required
+                checked={ageConfirmed}
+                onChange={(e) => setAgeConfirmed(e.target.checked)}
+                aria-invalid={errors.age ? true : undefined}
+                aria-describedby={errors.age ? "age-err" : undefined}
+                className="mt-0.5 h-5 w-5 shrink-0 accent-black"
+              />
+              I confirm I am 16 or older.
+            </label>
+            {errors.age && (
+              <p id="age-err" className="mt-2 text-[13px] font-medium">
+                Error: {errors.age}
+              </p>
+            )}
+          </div>
         )}
       </div>
 

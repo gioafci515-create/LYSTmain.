@@ -10,8 +10,12 @@ create table if not exists public.profiles (
   created_at  timestamptz not null default now(),
   full_name   text,
   email       text,
-  role        text not null default 'host' check (role in ('host', 'admin'))
+  role        text not null default 'host' check (role in ('host', 'admin')),
+  -- When the host ticked "I confirm I am 16 or older" at sign-up. Null for accounts made elsewhere.
+  age_confirmed_at timestamptz
 );
+-- Databases created before the column existed.
+alter table public.profiles add column if not exists age_confirmed_at timestamptz;
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -19,8 +23,13 @@ language plpgsql
 security definer set search_path = ''
 as $$
 begin
-  insert into public.profiles (id, email, full_name)
-  values (new.id, new.email, new.raw_user_meta_data ->> 'full_name');
+  insert into public.profiles (id, email, full_name, age_confirmed_at)
+  values (
+    new.id,
+    new.email,
+    new.raw_user_meta_data ->> 'full_name',
+    case when (new.raw_user_meta_data ->> 'age_confirmed_16') = 'true' then now() end
+  );
   return new;
 end;
 $$;
