@@ -176,7 +176,7 @@ export default function AdminApp() {
       {/* Mobile bottom tab bar */}
       <nav
         aria-label="Admin sections"
-        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-[#e6dedb] bg-[#f6f5f1]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 border-t border-[#e6dedb] bg-[#f6f5f1] pb-[env(safe-area-inset-bottom)] md:hidden"
       >
         {NAV.map((n) => {
           const on = n.id === section;

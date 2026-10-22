@@ -65,29 +65,13 @@ html {
   }
 }
 
-/* ── Scroll reveal: minimal. useReveal() adds .is-visible once an element scrolls in. ── */
+/* ── Scroll reveal: minimal. useReveal() adds .is-visible once an element scrolls in.
+   Text and blocks do not fade in; only photos settle, dividers draw and headlines rise. ── */
 :root {
   --reveal-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Text and blocks: a short rise and fade */
-.reveal {
-  opacity: 0;
-  transform: translate3d(0, 16px, 0);
-  transition:
-    opacity 0.9s var(--reveal-ease),
-    transform 0.9s var(--reveal-ease);
-  transition-delay: var(--d, 0ms);
-}
-.reveal-fade {
-  transform: none;
-}
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
-
-/* Photos: fade in while settling from a slight zoom */
+/* Photos: settle from a slight zoom */
 .reveal-photo img {
   transform: scale(1.05);
   transition: transform 1.6s var(--reveal-ease);
@@ -195,11 +179,19 @@ html {
   transition:
     background-color 0.4s ease,
     color 0.4s ease,
-    opacity 0.2s ease;
+    box-shadow 0.4s ease;
 }
 .island[data-tone="dark"] .island-pill {
   background: #fff;
   color: #0b0b0b;
+}
+/* Hover inverts to an outline in the island's own colour (never an opacity fade) */
+@media (hover: hover) {
+  .island .island-pill:hover {
+    background: transparent;
+    color: inherit;
+    box-shadow: inset 0 0 0 1px currentColor;
+  }
 }
 /* The wordmark file is white: shown black on light backgrounds */
 .island-logo {
@@ -334,7 +326,6 @@ dialog::backdrop {
   html {
     scroll-behavior: auto;
   }
-  .reveal,
   .reveal-text .rw > span {
     transform: none !important;
     transition: opacity 0.6s ease var(--d, 0ms) !important;

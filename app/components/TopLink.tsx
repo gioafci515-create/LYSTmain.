@@ -21,7 +21,7 @@ export default function TopLink({
   return (
     <Link
       href="/"
-      aria-label="LYST — back to top"
+      aria-label="LYST, back to top"
       tabIndex={tabIndex}
       className={className}
       onClick={(e) => {

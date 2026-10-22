@@ -3,7 +3,7 @@ import AuthForm from "../components/auth/AuthForm";
 import AuthShell from "../components/auth/AuthShell";
 
 export const metadata: Metadata = {
-  title: "Sign up — LYST",
+  title: "Sign up | LYST",
   robots: { index: false, follow: false },
 };
 

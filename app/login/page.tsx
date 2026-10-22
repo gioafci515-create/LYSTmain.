@@ -4,7 +4,7 @@ import AuthForm, { LinkNotice } from "../components/auth/AuthForm";
 import AuthShell from "../components/auth/AuthShell";
 
 export const metadata: Metadata = {
-  title: "Log in — LYST",
+  title: "Log in | LYST",
   robots: { index: false, follow: false },
 };
 

@@ -14,7 +14,7 @@ const inter = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "LYST — Beyond the invitation",
+  title: "LYST | Beyond the invitation",
   description: "Bespoke digital invitations and connected event experiences.",
 };
 

@@ -34,3 +34,28 @@ Permanent rules for anyone (human or AI) changing this codebase. They apply to e
 
 ### 7. Age
 - Host accounts are for people aged 16 or older. Sign-up requires ticking the confirmation (`app/components/auth/AuthForm.tsx`); it is recorded as `profiles.age_confirmed_at` (`supabase/schema.sql`). Any new way to create a host account must ask for the same confirmation.
+
+## Design: no "AI-made" tells
+
+Brand: monochrome Radical Premium Minimalism. Near-black `#0b0b0b` on warm off-white `#f6f5f1`, photography carries the colour, hairline rules, generous space, few words. Applies to the site, admin and every invitation template.
+
+1. **No purple/blue (or any decorative) gradients.** Gradients are allowed only as black legibility scrims over photos.
+2. **No gradient text.** Headlines are solid ink or solid white over a photo.
+3. **No emojis in headings or copy.** A plain ✓ is fine as a status mark in UI.
+4. **Typeface: Inter is the current brand spec (open decision for the new branding).** Don't add a second typeface without a brand decision; hierarchy comes from size, weight 300/400/500 and tracking.
+5. **No coloured left-border cards.** The only left rule is the 2px black rule on error/alert messages.
+6. **No glassmorphism** for new UI: solid surfaces. The Dynamic Island glass and the consultation CTA's glass hover are deliberate owner choices; don't spread them further.
+7. **No low-contrast text, light or dark.** Body text at least 4.5:1: on `#f6f5f1` nothing lighter than `text-black/60`. If a dark mode is ever added it must meet the same ratios.
+8. **No rows of three icon boxes.** Use photographs, numbered lists (01, 02…) and hairline rules.
+9. **No pill badge above a headline.** Section labels are plain small caps text ("03 / Capabilities").
+10. **No icon library sprinkled everywhere** (Lucide, Heroicons…). Icons only where they carry meaning, drawn as inline SVG at 1.3px stroke.
+11. **No untouched shadcn/ui** look (default radius, shadows, slate palette). If a primitive library is added, restyle it to these tokens.
+12. **No fade-in on scroll for text and blocks.** Content is there when you arrive. Allowed motion: headline line reveal (`RevealText`), photo settle, divider draw-in, the island's morph.
+13. **No cursor-following beams, spotlights or magnetic effects.**
+14. **No buttons fading on hover.** Hover inverts (fill ↔ outline) or draws an underline (`.ulink`); never just lowers opacity.
+15. **Consistent spacing.** Page gutters `px-6 md:px-10 xl:px-20`, content `max-w-[1760px]`, section padding `py-16 md:py-20`. Use the existing scale; no one-off values without a reason.
+16. **No em dashes in UI copy or titles.** Use a colon, comma, full stop or parentheses; page titles are "Page | LYST". "—" is only an empty-value marker in data tables.
+17. **No generic buzzword copy** ("seamless", "elevate", "unlock", "curated experiences", "next-level"). Say concretely what happens: who, what, when.
+18. **No serif italic accent words** inside sans headlines.
+19. **No Space Grotesk + Instrument Serif** (or any trending AI font pairing).
+20. **No grain/noise over gradients.** Texture only comes from real photography.

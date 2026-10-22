@@ -38,12 +38,12 @@ const columns: { title: string; items: Item[]; className?: string }[] = [
   },
 ];
 
-const eyebrow = "text-[11px] uppercase tracking-[0.2em] text-black/50";
+const eyebrow = "text-[11px] uppercase tracking-[0.2em] text-black/60";
 
 function FooterLink({ label, href, external, note }: Item) {
   if (!href) {
     return (
-      <span className="flex flex-col py-1.5 text-[15px] font-light text-black/45">
+      <span className="flex flex-col py-1.5 text-[15px] font-light text-black/60">
         {label}
         <span className="text-[11px]">{note}</span>
       </span>
@@ -94,7 +94,7 @@ export default function Footer() {
         <Reveal variant="fade" delay={450}>
           <div className="mt-16 flex flex-col gap-2 border-t border-[#e6dedb] pt-6 text-[10px] font-medium uppercase tracking-[0.15em] text-black/55 md:flex-row md:justify-between xl:mt-24">
             <p>&copy; LYST</p>
-            <p>Proposal — content approval required</p>
+            <p>Proposal: content approval required</p>
           </div>
         </Reveal>
       </div>

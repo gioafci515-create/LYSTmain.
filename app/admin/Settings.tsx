@@ -68,7 +68,7 @@ export default function Settings() {
                   <div>
                     <p className="text-sm">
                       {c.label}
-                      <span className="sr-only">{c.done ? " — done" : " — still needed"}</span>
+                      <span className="sr-only">{c.done ? ", done" : ", still needed"}</span>
                     </p>
                     <p className="mt-1 text-xs leading-relaxed text-black/60">{c.hint}</p>
                   </div>

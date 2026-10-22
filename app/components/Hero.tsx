@@ -34,7 +34,7 @@ export default function Hero() {
         className="absolute inset-x-0 top-0 h-[260px] bg-[linear-gradient(to_bottom,rgba(0,0,0,0.68)_0%,rgba(0,0,0,0.68)_60%,rgba(0,0,0,0)_100%)] md:h-[190px] md:bg-[linear-gradient(to_bottom,rgba(0,0,0,0.76)_0%,rgba(0,0,0,0)_100%)]"
       />
 
-      <header id="hero-header" className="relative z-10 px-6 md:px-10 lg:px-16">
+      <header id="hero-header" className="relative z-10 px-6 md:px-10 xl:px-20">
         <div className="flex h-24 items-center justify-between md:h-[84px]">
           <TopLink className="block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
             <Image
@@ -65,7 +65,7 @@ export default function Hero() {
         </div>
       </header>
 
-      <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-14 md:px-10 md:pb-[88px] lg:px-16">
+      <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-14 md:px-10 md:pb-[88px] xl:px-20">
         <RevealText
           as="h1"
           immediate

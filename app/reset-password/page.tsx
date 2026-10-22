@@ -3,7 +3,7 @@ import AuthShell from "../components/auth/AuthShell";
 import ResetForm from "./ResetForm";
 
 export const metadata: Metadata = {
-  title: "Choose a new password — LYST",
+  title: "Choose a new password | LYST",
   robots: { index: false, follow: false },
 };
 

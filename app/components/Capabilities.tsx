@@ -21,7 +21,7 @@ const items = [
   },
   {
     title: "Interactive experiences",
-    body: "Guest photos, voice messages, polls and more — for a more engaging event.",
+    body: "Guest photos, voice messages, polls and more, for a more engaging event.",
     desktop: "/images/cap-3-hd.jpg",
     mobile: "/images/cap-3-m-hd.jpg",
     ratios: [3 / 4, 3 / 2],
@@ -58,7 +58,7 @@ export default function Capabilities() {
         <SectionHeading
           label="03 / Capabilities"
           lines={["One invitation.", "More possibilities."]}
-          intro="A more connected way to bring people together — before, during and after the event."
+          intro="A more connected way to bring people together: before, during and after the event."
         />
 
         <ol className="mt-14 grid gap-12 md:grid-cols-2 md:gap-x-6 xl:grid-cols-5 xl:gap-x-6">

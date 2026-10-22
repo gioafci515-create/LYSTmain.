@@ -33,13 +33,13 @@ export function useReveal<T extends HTMLElement>(immediate = false) {
   return ref;
 }
 
+// Text and blocks never fade in on scroll (CLAUDE.md, design rules): "up" and "fade" stay put,
+// only their divider lines (.rule) draw in. Headlines reveal through RevealText.
 const VARIANTS = {
-  /** Short rise + fade. */
   up: "reveal",
-  /** Fade only. */
-  fade: "reveal reveal-fade",
-  /** Photo: fades in while settling from a slight zoom. */
-  photo: "reveal reveal-fade reveal-photo",
+  fade: "reveal",
+  /** Photo: settles from a slight zoom, no fade. */
+  photo: "reveal reveal-photo",
   /** Photo that is always visible (e.g. a section background): only the settle. */
   settle: "reveal-photo",
 } as const;

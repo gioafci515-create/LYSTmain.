@@ -18,9 +18,9 @@ const SECTIONS = [
 
 // Colours come from the island's tone (see .island in globals.css), so everything uses currentColor.
 const pill =
-  "island-pill flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[10px] font-medium uppercase tracking-[0.14em] transition-opacity hover:opacity-85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current md:h-9 md:px-4";
+  "island-pill flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[10px] font-medium uppercase tracking-[0.14em] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current md:h-9 md:px-4";
 const link =
-  "ulink flex h-9 items-center rounded-full px-3 text-[11px] uppercase tracking-[0.14em] opacity-75 transition-opacity hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-current";
+  "ulink flex h-9 items-center rounded-full px-3 text-[11px] uppercase tracking-[0.14em] focus-visible:outline-2 focus-visible:outline-current";
 
 function Wordmark({ tabIndex }: { tabIndex?: number }) {
   return (
@@ -173,7 +173,7 @@ export default function DynamicIsland() {
           <Link
             href="/account"
             aria-label="Account"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full opacity-80 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-current md:hidden"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-shadow hover:ring-1 hover:ring-current focus-visible:outline-2 focus-visible:outline-current md:hidden"
           >
             <svg aria-hidden width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.3">
               <circle cx="9" cy="6" r="3.2" />

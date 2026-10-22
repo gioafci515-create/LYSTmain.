@@ -42,7 +42,7 @@ export function Field({
   return (
     <div>
       <label htmlFor={id} className="mb-3 block text-[13px] font-medium">
-        {label} — {required ? "required" : "optional"}
+        {label} ({required ? "required" : "optional"})
       </label>
       {multiline ? (
         <textarea

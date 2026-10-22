@@ -227,7 +227,7 @@ export default function BookingFlow({
             </p>
             <div className="mt-6">
               <PrimaryButton disabled={!date} onClick={() => setStep("time")}>
-                {date ? "Continue to time →" : "Continue — choose a date"}
+                {date ? "Continue to time →" : "Choose a date to continue"}
               </PrimaryButton>
             </div>
           </div>
