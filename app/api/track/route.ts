@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { clientIp, rateLimited } from "@/lib/rate-limit";
+import { rateLimited, visitorIp } from "@/lib/rate-limit";
 import { detectDevice, detectSource, hostOf, isBot } from "@/lib/source";
 import { createServiceClient } from "@/lib/supabase/admin";
 
@@ -11,8 +11,8 @@ export async function POST(req: Request) {
   const salt = process.env.ANALYTICS_SALT;
   if (!salt || !ua || isBot(ua)) return empty();
 
-  const ip = clientIp(req);
-  if (rateLimited(`track:${ip}`, 60, 60_000)) return empty(429);
+  const ip = visitorIp(req.headers);
+  if (await rateLimited("track", ip)) return empty(429);
 
   let body: Record<string, unknown>;
   try {

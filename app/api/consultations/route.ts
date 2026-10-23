@@ -1,4 +1,4 @@
-import { clientIp, rateLimited } from "@/lib/rate-limit";
+import { rateLimited, visitorIp } from "@/lib/rate-limit";
 import { detectSource, hostOf } from "@/lib/source";
 import { createServiceClient } from "@/lib/supabase/admin";
 
@@ -9,7 +9,7 @@ const str = (v: unknown, max: number) =>
   typeof v === "string" ? v.trim().slice(0, max) : "";
 
 export async function POST(req: Request) {
-  if (rateLimited(`consult:${clientIp(req)}`, 5, 10 * 60_000)) {
+  if (await rateLimited("booking", visitorIp(req.headers))) {
     return Response.json({ error: "Too many requests. Please try again later." }, { status: 429 });
   }
   if (Number(req.headers.get("content-length") ?? 0) > 20_000) {

@@ -1,7 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
-import { ipFromHeaders, rateLimited } from "@/lib/rate-limit";
+import { rateLimited, visitorIp, type LimitName } from "@/lib/rate-limit";
 import { createUserClient } from "@/lib/supabase/server";
 
 // Every auth call runs here, on the server. The session lives only in httpOnly cookies
@@ -13,7 +13,6 @@ export type Account = { email: string; name: string | null; role: "admin" | "hos
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const BUSY = "Too many attempts. Please wait a few minutes and try again.";
-const MINUTE = 60_000;
 
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
@@ -29,8 +28,9 @@ function friendly(message: string) {
   return "Something went wrong. Please try again.";
 }
 
-async function limited(action: string, max: number, windowMs: number) {
-  return rateLimited(`${action}:${ipFromHeaders(await headers())}`, max, windowMs);
+// Limits per visitor IP; the windows live in lib/rate-limit.ts.
+async function limited(name: LimitName) {
+  return rateLimited(name, visitorIp(await headers()));
 }
 
 // Where links in auth e-mails point back to. Supabase only honours URLs on its Redirect URLs allow-list.
@@ -45,9 +45,7 @@ export async function signIn(email: unknown, password: unknown): Promise<Failure
   const e = str(email, 320);
   const p = typeof password === "string" ? password : "";
   if (!EMAIL_RE.test(e) || !p) return { error: "Enter your email and password." };
-  if ((await limited("login", 10, 10 * MINUTE)) || rateLimited(`login:${e.toLowerCase()}`, 10, 10 * MINUTE)) {
-    return { error: BUSY };
-  }
+  if ((await limited("login")) || (await rateLimited("loginEmail", e.toLowerCase()))) return { error: BUSY };
 
   const sb = await createUserClient();
   const { data, error } = await sb.auth.signInWithPassword({ email: e, password: p });
@@ -67,7 +65,7 @@ export async function signUp(input: {
   const password = typeof input?.password === "string" ? input.password : "";
   if (!name || !EMAIL_RE.test(email) || password.length < 8) return { error: "Please check your details." };
   if (input?.ageConfirmed !== true) return { error: "Host accounts are for people aged 16 or older." };
-  if (await limited("signup", 5, 60 * MINUTE)) return { error: BUSY };
+  if (await limited("signup")) return { error: BUSY };
 
   const sb = await createUserClient();
   const { data, error } = await sb.auth.signUp({
@@ -86,7 +84,7 @@ export async function signUp(input: {
 export async function requestPasswordReset(email: unknown): Promise<Failure | { ok: true }> {
   const e = str(email, 320);
   if (!EMAIL_RE.test(e)) return { error: "Enter a complete email address." };
-  if (await limited("reset", 5, 60 * MINUTE)) return { error: BUSY };
+  if (await limited("reset")) return { error: BUSY };
 
   const sb = await createUserClient();
   const { error } = await sb.auth.resetPasswordForEmail(e, {
@@ -99,7 +97,7 @@ export async function requestPasswordReset(email: unknown): Promise<Failure | { 
 export async function updatePassword(password: unknown): Promise<Failure | { ok: true }> {
   const p = typeof password === "string" ? password : "";
   if (p.length < 8) return { error: "Use at least 8 characters." };
-  if (await limited("password", 10, 10 * MINUTE)) return { error: BUSY };
+  if (await limited("password")) return { error: BUSY };
 
   const sb = await createUserClient();
   const {
