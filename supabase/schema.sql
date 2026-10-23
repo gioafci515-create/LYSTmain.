@@ -1,5 +1,7 @@
--- LYST database schema. Paste into Supabase → SQL Editor → Run.
--- Safe to re-run: uses "if not exists" / "or replace" / drop-then-create for policies.
+-- LYST database schema: the full picture, for setting up a NEW, empty Supabase project.
+-- Do NOT re-run it on the live database. It keeps data, but it drops and recreates the
+-- sign-up trigger and every policy and overwrites functions. Changes to an existing
+-- database go in supabase/migrations/ (see supabase/README.md), and are also mirrored here.
 
 -- ─────────────────────────────────────────────────────────────
 -- Profiles: one row per signed-up host (Supabase Auth users).
