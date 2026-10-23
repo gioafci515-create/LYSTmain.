@@ -18,7 +18,9 @@ export default function Experience() {
           label="04 / The experience"
           lines={["From the first invitation", "to the last memory."]}
           breakClass="hidden xl:block"
-          intro="One thoughtfully connected experience, unfolding before, during and after your event."
+          // COPY PENDING OWNER APPROVAL (2026-10-22). Was: "One thoughtfully connected experience,
+          // unfolding before, during and after your event."
+          intro="The invitation, replies, updates and shared photos stay together, before, during and after your event."
         />
 
         <Reveal variant="photo" className="mt-12">
@@ -34,7 +36,7 @@ export default function Experience() {
           {steps.map((s, i) => (
             <li key={s.title}>
               <Reveal delay={i * 90} className="pb-6 md:pb-10">
-                <div className="rule h-px w-full bg-[#e6dedb] md:bg-[#e6cfd0]" />
+                <div className="rule h-px w-full bg-[#e6dedb] md:bg-[#e8e9e7]" />
                 <p className="mt-6 text-[10px] tracking-wide">{String(i + 1).padStart(2, "0")}</p>
                 <h3 className="mt-5 text-[11px] font-medium uppercase tracking-[0.2em]">{s.title}</h3>
                 <p className="mt-4 max-w-[260px] text-sm font-light leading-relaxed text-black/80 md:text-base">
