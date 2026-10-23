@@ -11,8 +11,6 @@ const features = [
   {
     index: "02",
     title: "Connected experience",
-    // COPY PENDING OWNER APPROVAL (2026-10-22). Was: "From the first impression to the final memory,
-    // we bring your event to life through a seamless digital experience."
     body: "Invitations, guest responses and every detail of your event, kept together in one place.",
   },
 ];

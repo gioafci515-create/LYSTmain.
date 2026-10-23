@@ -18,8 +18,6 @@ export default function Experience() {
           label="04 / The experience"
           lines={["From the first invitation", "to the last memory."]}
           breakClass="hidden xl:block"
-          // COPY PENDING OWNER APPROVAL (2026-10-22). Was: "One thoughtfully connected experience,
-          // unfolding before, during and after your event."
           intro="The invitation, replies, updates and shared photos stay together, before, during and after your event."
         />
 

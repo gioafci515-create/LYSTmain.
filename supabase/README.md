@@ -33,4 +33,4 @@ Paid plans also keep automatic daily backups (Dashboard → **Database → Backu
 
 | Migration | Applied to live |
 |---|---|
-| `20261022190000_profiles_age_confirmation.sql` | not yet |
+| `20261022190000_profiles_age_confirmation.sql` | 2026-10-23 (CSV backup taken first) |
