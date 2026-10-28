@@ -12,6 +12,8 @@ export default function Tracker() {
   useEffect(() => {
     if (pathname.startsWith("/admin") || last.current === pathname) return;
     if (navigator.doNotTrack === "1") return;
+    // Automated browsers (tests, Lighthouse, scrapers) are not visitors.
+    if (navigator.webdriver) return;
     last.current = pathname;
 
     const q = new URLSearchParams(window.location.search);
