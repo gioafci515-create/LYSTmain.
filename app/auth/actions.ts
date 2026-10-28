@@ -116,6 +116,9 @@ export async function signOut() {
 
 /** The signed-in host or admin, or null. */
 export async function getAccount(): Promise<Account | null> {
+  // Without Supabase configured (CI, a fresh checkout) nobody can be signed in: pages that only
+  // ask "is someone signed in?" shouldn't error over it. Real auth actions still fail loudly.
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return null;
   const sb = await createUserClient();
   const {
     data: { user },
