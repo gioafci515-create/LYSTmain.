@@ -1,53 +1,38 @@
 import Image from "next/image";
-import { site, socialLabels, type SocialKey } from "@/lib/site";
+import { site, socialLabels, telHref, type SocialKey } from "@/lib/site";
 import Reveal from "./Reveal";
 import TopLink from "./TopLink";
 
-type Item = { label: string; href?: string; external?: boolean; note: string };
+// No href = plain text (e.g. the city). Details that aren't supplied yet are left out entirely:
+// the public site never shows a placeholder.
+type Item = { label: string; href?: string; external?: boolean };
 
 const socialKeys = Object.keys(socialLabels) as SocialKey[];
+const { email, phone, address } = site.contact;
 
-// Empty href = not supplied yet: shown muted with its "[... required]" note.
 const columns: { title: string; items: Item[]; className?: string }[] = [
   {
     title: "Contact",
     className: "col-span-2 sm:col-span-1",
     items: [
-      {
-        label: site.contact.email || "Email",
-        href: site.contact.email && `mailto:${site.contact.email}`,
-        note: "[details required]",
-      },
-    ],
-  },
-  {
-    title: "Legal",
-    items: [
-      { label: "Privacy Policy", note: "[content required]" },
-      { label: "Terms", note: "[content required]" },
-    ],
+      email && { label: email, href: `mailto:${email}` },
+      phone && { label: phone, href: telHref(phone) },
+      address && { label: address },
+    ].filter((i): i is Item => !!i),
   },
   {
     title: "Follow",
-    items: socialKeys.map((k) => ({
-      label: socialLabels[k],
-      href: site.social[k],
-      external: true,
-      note: "[link required]",
-    })),
+    items: socialKeys
+      .filter((k) => site.social[k])
+      .map((k) => ({ label: socialLabels[k], href: site.social[k], external: true })),
   },
-];
+].filter((c) => c.items.length > 0);
 
 const eyebrow = "text-[11px] uppercase tracking-[0.2em] text-black/60";
 
-function FooterLink({ label, href, external, note }: Item) {
+function FooterLink({ label, href, external }: Item) {
   if (!href) {
-    return (
-      <span className="flex flex-col py-1.5 text-[15px] font-light text-black/60">
-        {label}
-        <span className="text-[11px]">{note}</span>
-      </span>
-    );
+    return <span className="flex min-h-9 items-center text-[15px] font-light">{label}</span>;
   }
   return (
     <a
@@ -92,9 +77,8 @@ export default function Footer() {
         </div>
 
         <Reveal variant="fade" delay={450}>
-          <div className="mt-16 flex flex-col gap-2 border-t border-[#e6dedb] pt-6 text-[10px] font-medium uppercase tracking-[0.15em] text-black/55 md:flex-row md:justify-between xl:mt-24">
+          <div className="mt-16 border-t border-[#e6dedb] pt-6 text-[10px] font-medium uppercase tracking-[0.15em] text-black/55 xl:mt-24">
             <p>&copy; LYST</p>
-            <p>Proposal: content approval required</p>
           </div>
         </Reveal>
       </div>

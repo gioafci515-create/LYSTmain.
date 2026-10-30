@@ -39,6 +39,15 @@ test("home page shows every section", async ({ page }) => {
   await expect(footer.getByRole("link", { name: /TikTok/ })).toHaveAttribute("href", /tiktok\.com/);
 });
 
+test("no unfinished placeholder text is public", async ({ page }) => {
+  await page.goto("/");
+  const text = await page.locator("body").innerText();
+  expect(text).not.toMatch(/\[[^\]]*required\]|content approval|proposal:/i);
+  const footer = page.locator("footer");
+  await expect(footer.getByRole("link", { name: "lystinvites@gmail.com" })).toHaveAttribute("href", "mailto:lystinvites@gmail.com");
+  await expect(footer.getByRole("link", { name: "+995 568 13 02 60" })).toHaveAttribute("href", "tel:+995568130260");
+});
+
 test("booking dialog opens and closes without submitting", async ({ page }) => {
   await page.goto("/");
   await page.locator("#consultation").getByRole("button", { name: /book a consultation/i }).click();
