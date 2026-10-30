@@ -151,7 +151,7 @@ export default function AdminApp() {
           </div>
         </header>
 
-        <main key={section} className="fade-up mx-auto max-w-[1280px] px-5 pb-28 pt-6 md:px-10 md:pb-16 md:pt-10">
+        <main id="main" key={section} className="fade-up mx-auto max-w-[1280px] px-5 pb-28 pt-6 md:px-10 md:pb-16 md:pt-10">
           {section === "overview" && data && <Overview data={data} goTo={go} onRefresh={load} />}
           {section === "bookings" && data && <Consultations items={data.consultations} onChange={updateConsultation} />}
           {section === "hosts" && data && <Hosts hosts={data.hosts} />}
@@ -216,7 +216,7 @@ function AdminGate({
   onLogout: () => void;
 }) {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col justify-center px-6 py-16">
+    <main id="main" className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col justify-center px-6 py-16">
       <p className="text-2xl font-light tracking-tight">LYST</p>
       <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-black/60">Admin</p>
 

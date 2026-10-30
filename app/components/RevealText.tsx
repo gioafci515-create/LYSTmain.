@@ -25,7 +25,10 @@ export default function RevealText({
   stagger?: number;
   immediate?: boolean;
 }) {
+  // `immediate` headings (above the fold) animate with CSS alone from the first paint;
+  // the rest reveal when scrolled into view.
   const ref = useReveal<HTMLHeadingElement>(immediate);
+  const revealClass = immediate ? "reveal-text reveal-now is-visible" : "reveal-text";
   let i = 0;
 
   const content = lines.map((line, li) => (
@@ -51,7 +54,7 @@ export default function RevealText({
     as,
     {
       ref,
-      className: `reveal-text ${className}`,
+      className: `${revealClass} ${className}`,
       style: { "--d": `${delay}ms`, "--stagger": `${stagger}ms` } as React.CSSProperties,
     },
     content,

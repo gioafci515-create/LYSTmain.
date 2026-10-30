@@ -83,30 +83,44 @@ html {
 
 /* Divider lines draw in from the left */
 .reveal .rule {
-  transform: scaleX(0);
   transform-origin: left;
   transition: transform 1.1s var(--reveal-ease) calc(var(--d, 0ms) + 150ms);
 }
-.reveal.is-visible .rule {
-  transform: none;
-}
 
-/* Headings: words fade up softly, one after another */
+/* Headings: words fade up softly, one after another. Text is visible by default and only
+   hidden for the reveal when scripts run, so visitors without JavaScript still read it. */
 .reveal-text .rw,
 .reveal-text .rw > span {
   display: inline-block;
 }
 .reveal-text .rw > span {
-  opacity: 0;
-  transform: translate3d(0, 0.18em, 0);
   transition:
     opacity 0.8s var(--reveal-ease),
     transform 0.9s var(--reveal-ease);
   transition-delay: calc(var(--d, 0ms) + var(--i, 0) * var(--stagger, 40ms));
 }
-.reveal-text.is-visible .rw > span {
-  opacity: 1;
-  transform: none;
+@media (scripting: enabled) {
+  .reveal-text:not(.is-visible) .rw > span {
+    opacity: 0;
+    transform: translate3d(0, 0.18em, 0);
+  }
+  .reveal:not(.is-visible) .rule {
+    transform: scaleX(0);
+  }
+}
+
+/* Above-the-fold headline: plain CSS from the first paint, never waiting for JavaScript.
+   It starts at 0.3 opacity, not 0: browsers ignore fully transparent text for LCP, and this
+   headline is the page's largest element (the full-screen photo counts as a background). */
+@keyframes word-up {
+  from {
+    opacity: 0.3;
+    transform: translate3d(0, 0.18em, 0);
+  }
+}
+.reveal-now .rw > span {
+  animation: word-up 0.8s var(--reveal-ease) both;
+  animation-delay: calc(var(--d, 0ms) + var(--i, 0) * var(--stagger, 40ms));
 }
 
 .fade-up {
@@ -336,6 +350,7 @@ dialog::backdrop {
   }
   .fade-up,
   .hero-zoom,
+  .reveal-now .rw > span,
   dialog[open],
   dialog::backdrop {
     animation: none;

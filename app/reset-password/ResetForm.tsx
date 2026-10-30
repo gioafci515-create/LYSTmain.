@@ -22,7 +22,7 @@ export default function ResetForm() {
       if ("error" in res) setMessage(res.error);
       else setDone(true);
     } catch {
-      setMessage("We could not reach the server. Please try again.");
+      setMessage("We could not reach the server. Check your connection, refresh the page and try again.");
     } finally {
       setBusy(false);
     }
@@ -34,7 +34,7 @@ export default function ResetForm() {
         <p className="text-2xl font-light">Your password has been updated.</p>
         <Link
           href="/account"
-          className="mt-8 flex h-14 w-full items-center justify-center bg-[#201f1d] text-[11px] uppercase tracking-[0.15em] text-white hover:bg-black"
+          className="mt-8 flex h-14 w-full items-center justify-center bg-[#201f1d] text-xs uppercase tracking-[0.15em] text-white hover:bg-black"
         >
           Go to your account
         </Link>

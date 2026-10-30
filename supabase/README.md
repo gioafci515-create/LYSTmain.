@@ -34,3 +34,10 @@ Paid plans also keep automatic daily backups (Dashboard → **Database → Backu
 | Migration | Applied to live |
 |---|---|
 | `20261022190000_profiles_age_confirmation.sql` | 2026-10-23 (CSV backup taken first) |
+
+## Operations: auth rate limits (QA-21)
+
+Login, sign-up and password reset run on the server (`app/auth/actions.ts`), so Supabase sees all of them coming from Vercel's server IPs, not from each visitor. Supabase's own per-IP auth limits are therefore shared by everyone. LYST's per-visitor limits (`lib/rate-limit.ts`) apply first.
+
+- Every month, or after a launch or campaign: Dashboard → **Logs → Auth**. Filter for status 429 / "rate limit".
+- If they appear: Dashboard → **Authentication → Rate Limits**. Raise the sign-in/sign-up and email limits; the email limit needs custom SMTP (QA-05).

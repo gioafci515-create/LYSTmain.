@@ -18,8 +18,8 @@ const features = [
 function Feature({ index, title, body }: (typeof features)[number]) {
   return (
     <div>
-      <p className="text-[10px] tracking-wide">{index}</p>
-      <h3 className="mt-5 text-[11px] font-medium uppercase tracking-[0.2em]">
+      <p className="text-xs tracking-wide">{index}</p>
+      <h3 className="mt-5 text-xs font-medium uppercase tracking-[0.2em]">
         {title}
       </h3>
       <p className="mt-4 max-w-[320px] text-base font-light leading-relaxed text-black/80">
@@ -37,7 +37,7 @@ export default function About() {
     <section id="about" className="px-6 py-16 md:px-10 md:py-20 xl:px-20">
       <div className="mx-auto max-w-[1760px]">
         <Reveal variant="fade">
-          <p className="mb-6 text-[11px] uppercase tracking-[0.2em] md:hidden">02 / About</p>
+          <p className="mb-6 text-xs uppercase tracking-[0.2em] md:hidden">02 / About</p>
         </Reveal>
         <div className="md:flex md:items-start md:justify-between">
           <RevealText

@@ -18,13 +18,13 @@ const SECTIONS = [
 
 // Colours come from the island's tone (see .island in globals.css), so everything uses currentColor.
 const pill =
-  "island-pill flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[10px] font-medium uppercase tracking-[0.14em] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current md:h-9 md:px-4";
+  "island-pill flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-xs font-medium uppercase tracking-[0.14em] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current md:h-9 md:px-4";
 const link =
-  "ulink flex h-9 items-center rounded-full px-3 text-[11px] uppercase tracking-[0.14em] focus-visible:outline-2 focus-visible:outline-current";
+  "ulink flex h-9 items-center rounded-full px-3 text-xs uppercase tracking-[0.14em] focus-visible:outline-2 focus-visible:outline-current";
 
 function Wordmark({ tabIndex }: { tabIndex?: number }) {
   return (
-    <TopLink tabIndex={tabIndex} className="shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
+    <TopLink tabIndex={tabIndex} className="flex min-h-6 shrink-0 items-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
       <Image src="/images/lyst-wordmark.png" alt="" width={78} height={29} className="island-logo h-auto w-[50px] md:w-[56px]" />
     </TopLink>
   );
@@ -33,7 +33,7 @@ function Wordmark({ tabIndex }: { tabIndex?: number }) {
 function Live({ label }: { label: string }) {
   if (!label) return null;
   return (
-    <span className="flex min-w-0 items-center gap-2 text-[10px] uppercase tracking-[0.16em] opacity-70">
+    <span className="flex min-w-0 items-center gap-2 text-xs uppercase tracking-[0.16em] opacity-70">
       <span aria-hidden className="island-dot h-1.5 w-1.5 shrink-0 rounded-full" />
       <span key={label} className="island-label truncate">
         {label}

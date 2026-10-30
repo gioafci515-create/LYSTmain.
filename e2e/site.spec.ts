@@ -48,6 +48,38 @@ test("no unfinished placeholder text is public", async ({ page }) => {
   await expect(footer.getByRole("link", { name: "+995 568 13 02 60" })).toHaveAttribute("href", "tel:+995568130260");
 });
 
+test.describe("without JavaScript", () => {
+  test.use({ javaScriptEnabled: false });
+
+  test("headings are readable and booking has an email fallback", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("h1 .rw > span").first()).toHaveCSS("opacity", "1");
+    await expect(page.locator("#about h2 .rw > span").first()).toHaveCSS("opacity", "1");
+    await expect(page.locator("#consultation").getByRole("link", { name: "lystinvites@gmail.com" })).toBeVisible();
+  });
+});
+
+test("booking keeps the draft when closed, and Back closes it", async ({ page }) => {
+  await page.goto("/");
+  const open = () => page.locator("#consultation").getByRole("button", { name: /book a consultation/i }).click();
+  const dialog = page.getByRole("dialog", { name: "Book a consultation" });
+  await open();
+  await dialog.locator("[role=group] button:not([disabled])").first().click();
+  await dialog.getByRole("button", { name: /continue to time/i }).click();
+  await dialog.getByRole("radio").first().click();
+  await dialog.getByRole("button", { name: /continue to details/i }).click();
+  await dialog.getByLabel("Name").fill("Keep Me");
+
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await open();
+  await expect(dialog.getByLabel("Name")).toHaveValue("Keep Me");
+
+  await page.goBack();
+  await expect(dialog).toBeHidden();
+  await expect(page).toHaveURL(/\/$/);
+});
+
 test("booking dialog opens and closes without submitting", async ({ page }) => {
   await page.goto("/");
   await page.locator("#consultation").getByRole("button", { name: /book a consultation/i }).click();

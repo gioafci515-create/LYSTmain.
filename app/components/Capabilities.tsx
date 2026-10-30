@@ -84,8 +84,8 @@ export default function Capabilities() {
                   />
                 </Reveal>
                 <Reveal delay={delay + 200}>
-                  <p className="mt-9 text-[10px] tracking-wide">{String(i + 1).padStart(2, "0")}</p>
-                  <h3 className="mt-5 text-[11px] font-medium uppercase tracking-[0.2em]">{item.title}</h3>
+                  <p className="mt-9 text-xs tracking-wide">{String(i + 1).padStart(2, "0")}</p>
+                  <h3 className="mt-5 text-xs font-medium uppercase tracking-[0.2em]">{item.title}</h3>
                   <div className="rule mt-4 h-px w-10 bg-[#e8e9e7]" />
                   <p className="mt-5 max-w-[340px] text-sm font-light leading-relaxed text-black/80 md:text-base">
                     {item.body}

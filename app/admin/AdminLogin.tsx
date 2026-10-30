@@ -19,7 +19,7 @@ export default function AdminLogin({ onSignedIn }: { onSignedIn: (email: string)
       if ("error" in res) setError(res.error);
       else onSignedIn(email.trim());
     } catch {
-      setError("We could not reach the server. Please try again.");
+      setError("We could not reach the server. Check your connection, refresh the page and try again.");
     } finally {
       setBusy(false);
     }

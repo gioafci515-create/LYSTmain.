@@ -35,8 +35,8 @@ export default function Experience() {
             <li key={s.title}>
               <Reveal delay={i * 90} className="pb-6 md:pb-10">
                 <div className="rule h-px w-full bg-[#e6dedb] md:bg-[#e8e9e7]" />
-                <p className="mt-6 text-[10px] tracking-wide">{String(i + 1).padStart(2, "0")}</p>
-                <h3 className="mt-5 text-[11px] font-medium uppercase tracking-[0.2em]">{s.title}</h3>
+                <p className="mt-6 text-xs tracking-wide">{String(i + 1).padStart(2, "0")}</p>
+                <h3 className="mt-5 text-xs font-medium uppercase tracking-[0.2em]">{s.title}</h3>
                 <p className="mt-4 max-w-[260px] text-sm font-light leading-relaxed text-black/80 md:text-base">
                   {s.body}
                 </p>

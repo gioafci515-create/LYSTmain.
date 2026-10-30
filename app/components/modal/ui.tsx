@@ -15,6 +15,7 @@ export function Field({
   error,
   multiline,
   autoComplete,
+  maxLength,
 }: {
   label: string;
   required?: boolean;
@@ -25,6 +26,8 @@ export function Field({
   error?: string;
   multiline?: boolean;
   autoComplete?: string;
+  /** Match the server's limit, so nothing is cut off silently after sending. */
+  maxLength?: number;
 }) {
   const id = useId();
   const errId = `${id}-err`;
@@ -36,6 +39,7 @@ export function Field({
     "aria-describedby": error ? errId : undefined,
     required,
     autoComplete,
+    maxLength,
     className: `${inputBase} ${error ? "border-black" : "border-[#efe3dc]"}`,
   };
 
@@ -76,7 +80,7 @@ export function PrimaryButton({
     <button
       type="button"
       {...props}
-      className="flex h-14 w-full items-center justify-center bg-[#201f1d] px-4 text-[11px] uppercase tracking-[0.15em] text-white transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:cursor-not-allowed disabled:border disabled:border-[#201f1d] disabled:bg-[#e7dfd4] disabled:text-[#201f1d] disabled:hover:bg-[#e7dfd4]"
+      className="flex h-14 w-full items-center justify-center bg-[#201f1d] px-4 text-xs uppercase tracking-[0.15em] text-white transition-colors hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black disabled:cursor-not-allowed disabled:border disabled:border-[#201f1d] disabled:bg-[#e7dfd4] disabled:text-[#201f1d] disabled:hover:bg-[#e7dfd4]"
     >
       {children}
     </button>
@@ -91,7 +95,7 @@ export function TextButton({
     <button
       type="button"
       {...props}
-      className="mx-auto block px-2 py-3 text-[11px] uppercase tracking-[0.15em] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+      className="mx-auto block px-2 py-3 text-xs uppercase tracking-[0.15em] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
     >
       {children}
     </button>
@@ -100,7 +104,7 @@ export function TextButton({
 
 export function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] uppercase tracking-[0.2em]">{children}</p>
+    <p className="text-xs uppercase tracking-[0.2em]">{children}</p>
   );
 }
 
@@ -113,7 +117,7 @@ export function DemoNote({
 }) {
   return (
     <div className="mt-10 border-t border-[#efe3dc] pt-6">
-      <p className="text-[10px] font-medium uppercase tracking-[0.15em]">
+      <p className="text-xs font-medium uppercase tracking-[0.15em]">
         {title}
       </p>
       {children && (
@@ -143,13 +147,14 @@ export function SummaryRow({
             type="button"
             onClick={onChange}
             aria-label={`Change ${label.toLowerCase()}`}
-            className="px-2 py-1 text-[11px] uppercase tracking-[0.15em] hover:underline focus-visible:outline-2 focus-visible:outline-black"
+            className="px-2 py-1 text-xs uppercase tracking-[0.15em] hover:underline focus-visible:outline-2 focus-visible:outline-black"
           >
             Change
           </button>
         )}
       </div>
-      <p className="mt-3 text-base font-light text-black/80">{value}</p>
+      {/* Long emails or text without spaces wrap instead of pushing the dialog sideways. */}
+      <p className="mt-3 whitespace-pre-wrap text-base font-light text-black/80 [overflow-wrap:anywhere]">{value}</p>
     </div>
   );
 }

@@ -9,7 +9,8 @@ const navLink =
 
 export default function Hero() {
   return (
-    <section data-tone="dark" className="relative min-h-svh text-white md:h-[900px] md:min-h-0">
+    // Never taller than the screen (min 480px), so the headline is on the first screen in phone landscape too.
+    <section data-tone="dark" className="relative min-h-svh text-white md:h-[min(900px,100svh)] md:min-h-[480px]">
       <div className="absolute inset-0 overflow-hidden">
         <Photo
           src="/images/hero-hd.jpg"
@@ -42,7 +43,7 @@ export default function Hero() {
               alt="LYST"
               width={78}
               height={29}
-              priority
+              loading="eager"
               className="h-auto w-[78px]"
             />
           </TopLink>
@@ -65,7 +66,7 @@ export default function Hero() {
         </div>
       </header>
 
-      <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-14 md:px-10 md:pb-[88px] xl:px-20">
+      <div id="main" className="absolute inset-x-0 bottom-0 z-10 px-6 pb-14 md:px-10 md:pb-[88px] xl:px-20">
         <RevealText
           as="h1"
           immediate

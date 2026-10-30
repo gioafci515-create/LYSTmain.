@@ -28,7 +28,7 @@ const columns: { title: string; items: Item[]; className?: string }[] = [
   },
 ].filter((c) => c.items.length > 0);
 
-const eyebrow = "text-[11px] uppercase tracking-[0.2em] text-black/60";
+const eyebrow = "text-xs uppercase tracking-[0.2em] text-black/60";
 
 function FooterLink({ label, href, external }: Item) {
   if (!href) {
@@ -77,7 +77,7 @@ export default function Footer() {
         </div>
 
         <Reveal variant="fade" delay={450}>
-          <div className="mt-16 border-t border-[#e6dedb] pt-6 text-[10px] font-medium uppercase tracking-[0.15em] text-black/55 xl:mt-24">
+          <div className="mt-16 border-t border-[#e6dedb] pt-6 text-xs font-medium uppercase tracking-[0.15em] text-black/55 xl:mt-24">
             <p>&copy; LYST</p>
           </div>
         </Reveal>

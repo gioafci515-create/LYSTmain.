@@ -21,14 +21,14 @@ export default function AuthShell({
         </Link>
         <Link
           href="/"
-          className="flex h-11 items-center text-[11px] uppercase tracking-[0.14em] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+          className="flex h-11 items-center text-xs uppercase tracking-[0.14em] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
         >
           ← Back to website
         </Link>
       </div>
 
-      <div className="fade-up mt-14 md:mt-20">
-        <p className="text-[11px] uppercase tracking-[0.2em]">{eyebrow}</p>
+      <div id="main" className="fade-up mt-14 md:mt-20">
+        <p className="text-xs uppercase tracking-[0.2em]">{eyebrow}</p>
         <h1 className="mt-8 text-[40px] font-light leading-[1.05] tracking-tight md:text-5xl">{title}</h1>
         <div className="mt-8">{children}</div>
       </div>

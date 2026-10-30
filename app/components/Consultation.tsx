@@ -1,3 +1,4 @@
+import { site } from "@/lib/site";
 import ModalTrigger from "./modal/ModalTrigger";
 import Photo from "./Photo";
 import Reveal from "./Reveal";
@@ -26,7 +27,7 @@ export default function Consultation() {
       </Reveal>
 
       <Reveal variant="fade" className="relative z-10">
-        <p className="px-6 pt-10 text-[11px] uppercase tracking-[0.2em] md:px-10 xl:px-20 xl:pt-[68px]">
+        <p className="px-6 pt-10 text-xs uppercase tracking-[0.2em] md:px-10 xl:px-20 xl:pt-[68px]">
           05 / Consultation
         </p>
       </Reveal>
@@ -44,9 +45,19 @@ export default function Consultation() {
           </p>
         </Reveal>
         <Reveal delay={500}>
-          <ModalTrigger className="mt-8 flex h-14 w-full items-center justify-center gap-2 glass-hover border border-white/80 text-[11px] uppercase tracking-[0.12em] xl:w-[280px]">
+          <ModalTrigger className="mt-8 flex h-14 w-full items-center justify-center gap-2 glass-hover border border-white/80 text-xs uppercase tracking-[0.12em] xl:w-[280px]">
             Book a consultation <span aria-hidden>&#8599;</span>
           </ModalTrigger>
+          {/* The booking dialog needs JavaScript; without it, offer the same request by email. */}
+          <noscript>
+            <p className="mt-4 max-w-[440px] text-base font-light leading-relaxed text-white/90">
+              Booking online needs JavaScript. You can also email us at{" "}
+              <a href={`mailto:${site.contact.email}?subject=Consultation%20request`} className="underline underline-offset-4">
+                {site.contact.email}
+              </a>
+              .
+            </p>
+          </noscript>
         </Reveal>
       </div>
     </section>

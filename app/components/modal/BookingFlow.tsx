@@ -18,7 +18,14 @@ const STEPS: { key: Exclude<Step, "done" | "failed">; label: string }[] = [
   { key: "details", label: "Details" },
   { key: "review", label: "Review" },
 ];
+// Consultation slots are Tbilisi times. Georgia is UTC+4 all year (no daylight saving).
 const TIMES = ["09:30", "11:00", "14:00", "16:30"];
+const TBILISI = "Asia/Tbilisi";
+const SEND_TIMEOUT_MS = 20_000;
+const localTime = (date: string, time: string, timeZone: string) =>
+  new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", timeZone }).format(
+    new Date(`${date}T${time}:00+04:00`),
+  );
 const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
 const WEEKS_SHOWN = 5;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -61,9 +68,12 @@ function buildCalendar(): { cells: Cell[]; label: string } {
 export default function BookingFlow({
   titleId,
   onClose,
+  onSent,
 }: {
   titleId: string;
   onClose: () => void;
+  /** Called once the request is saved, so the next booking starts from a clean form. */
+  onSent: () => void;
 }) {
   const [step, setStep] = useState<Step>("date");
   const [date, setDate] = useState<string | null>(null);
@@ -88,7 +98,11 @@ export default function BookingFlow({
   const stepIndex = step === "failed" ? 3 : STEPS.findIndex((s) => s.key === step);
   const finished = step === "done";
   const dateLabel = date ? fmtIso(date) : "";
-  const timeLabel = time ? `${time} (${timeZone})` : "";
+  // Visitors outside Georgia also see each slot in their own time.
+  const showLocal = !!date && timeZone !== TBILISI && localTime(date, "12:00", timeZone) !== "12:00";
+  const timeLabel = time
+    ? `${time} Tbilisi time${showLocal && date ? ` (${localTime(date, time, timeZone)} your time)` : ""}`
+    : "";
   const contactLabel = `${name.trim()} · ${email.trim()}${phone.trim() ? ` · ${phone.trim()}` : ""}`;
   const errorFields = [errors.name && "Name", errors.email && "Email"].filter(Boolean);
 
@@ -114,14 +128,17 @@ export default function BookingFlow({
           phone,
           context,
           date,
-          time: `${time} ${timeZone}`,
+          time: `${time} ${TBILISI}`,
           website,
           referrer: document.referrer,
           utm_source: q.get("utm_source") ?? "",
         }),
+        // A server that never answers must not leave the button on "Sending…" forever.
+        signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
       });
       if (res.ok) {
         setStep("done");
+        onSent();
       } else {
         const data = (await res.json().catch(() => null)) as {
           error?: string;
@@ -135,8 +152,12 @@ export default function BookingFlow({
           setStep("failed");
         }
       }
-    } catch {
-      setFailMessage("");
+    } catch (err) {
+      setFailMessage(
+        err instanceof DOMException && err.name === "TimeoutError"
+          ? "The server took too long to answer. Please try again. Nothing has been saved."
+          : "",
+      );
       setStep("failed");
     } finally {
       setSending(false);
@@ -193,11 +214,11 @@ export default function BookingFlow({
             <p className="text-base font-light leading-relaxed text-black/80 md:text-lg">
               Choose the day you would like to talk. No account is required.
             </p>
-            <p className="mt-8 text-[11px] uppercase tracking-[0.15em]">{calendar.label}</p>
+            <p className="mt-8 text-xs uppercase tracking-[0.15em]">{calendar.label}</p>
 
             <div role="group" aria-label={calendar.label} className="mt-6 grid grid-cols-7 gap-y-1 text-center">
               {WEEKDAYS.map((w, i) => (
-                <span key={i} className="pb-3 text-[11px]" aria-hidden>
+                <span key={i} className="pb-3 text-xs" aria-hidden>
                   {w}
                 </span>
               ))}
@@ -237,7 +258,7 @@ export default function BookingFlow({
           <div>
             <SummaryRow label="Date" value={dateLabel} onChange={() => setStep("date")} />
             <p className="mt-8 text-base font-light text-black/80 md:text-lg">
-              Choose a preferred time. We will confirm availability by email.
+              Choose a preferred time in Tbilisi (GMT+4). We will confirm availability by email.
             </p>
             <div role="radiogroup" aria-label="Preferred time" className="mt-6 grid gap-2 md:grid-cols-2">
               {TIMES.map((t) => {
@@ -255,7 +276,12 @@ export default function BookingFlow({
                         : "border-[#efe3dc] bg-white hover:border-black"
                     }`}
                   >
-                    {t}
+                    <span>
+                      {t}
+                      {showLocal && date && (
+                        <span className="block text-xs font-normal opacity-80">{localTime(date, t, timeZone)} your time</span>
+                      )}
+                    </span>
                     {on ? (
                       <span>✓ Selected</span>
                     ) : (
@@ -265,7 +291,9 @@ export default function BookingFlow({
                 );
               })}
             </div>
-            <p className="mt-6 text-[13px] font-medium">Times shown in your time zone: {timeZone}.</p>
+            {showLocal && (
+              <p className="mt-6 text-[13px] font-medium">Your own time ({timeZone}) is shown under each slot.</p>
+            )}
             <div className="mt-6 space-y-2">
               <PrimaryButton disabled={!time} onClick={() => setStep("details")}>
                 Continue to details →
@@ -301,10 +329,11 @@ export default function BookingFlow({
               </p>
             )}
             <div className="space-y-6">
-              <Field label="Name" required value={name} onChange={setName} placeholder="Your name" error={errors.name} autoComplete="name" />
-              <Field label="Email" required type="email" value={email} onChange={setEmail} placeholder="Your email" error={errors.email} autoComplete="email" />
-              <Field label="Phone" type="tel" value={phone} onChange={setPhone} placeholder="Your phone number" autoComplete="tel" />
-              <Field label="Event context" multiline value={context} onChange={setContext} placeholder="A little about your occasion" />
+              {/* Limits match app/api/consultations/route.ts. */}
+              <Field label="Name" required value={name} onChange={setName} placeholder="Your name" error={errors.name} autoComplete="name" maxLength={200} />
+              <Field label="Email" required type="email" value={email} onChange={setEmail} placeholder="Your email" error={errors.email} autoComplete="email" maxLength={320} />
+              <Field label="Phone" type="tel" value={phone} onChange={setPhone} placeholder="Your phone number" autoComplete="tel" maxLength={50} />
+              <Field label="Event context" multiline value={context} onChange={setContext} placeholder="A little about your occasion" maxLength={4000} />
               {/* Honeypot: hidden from people, tempting to bots. */}
               <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
                 <label>

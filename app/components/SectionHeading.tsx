@@ -16,7 +16,7 @@ export default function SectionHeading({
   return (
     <>
       <Reveal variant="fade">
-        <p className="text-[11px] uppercase tracking-[0.2em]">{label}</p>
+        <p className="text-xs uppercase tracking-[0.2em]">{label}</p>
       </Reveal>
       <div className="mt-8 xl:flex xl:items-end xl:justify-between">
         <RevealText

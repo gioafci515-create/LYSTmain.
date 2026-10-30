@@ -12,7 +12,7 @@ type Errors = { name?: string; email?: string; password?: string; age?: string }
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const textLink =
-  "mx-auto block w-fit px-2 py-3 text-[11px] uppercase tracking-[0.15em] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";
+  "mx-auto block w-fit px-2 py-3 text-xs uppercase tracking-[0.15em] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";
 
 /** Shows messages passed back from email links, e.g. /login?error=link. */
 export function LinkNotice() {
@@ -76,7 +76,8 @@ export default function AuthForm({ view }: { view: View }) {
     try {
       await action();
     } catch {
-      setFailure("We could not reach the server. Please check your connection and try again.");
+      // Also covers a page left open across a new deployment (its server action no longer exists).
+      setFailure("We could not reach the server. Check your connection, refresh the page and try again.");
     } finally {
       setBusy(false);
     }
@@ -111,7 +112,7 @@ export default function AuthForm({ view }: { view: View }) {
   if (registered) {
     return (
       <div role="status">
-        <p className="text-[11px] uppercase tracking-[0.2em]">Almost done</p>
+        <p className="text-xs uppercase tracking-[0.2em]">Almost done</p>
         <p className="mt-6 text-3xl font-light">Confirm your email.</p>
         <p className="mt-5 text-base font-light leading-relaxed text-black/80">
           We sent a confirmation link to {email.trim()}. Open it on this device to activate your host account.
@@ -119,7 +120,7 @@ export default function AuthForm({ view }: { view: View }) {
         </p>
         <Link
           href="/login"
-          className="mt-10 flex h-14 w-full items-center justify-center bg-[#201f1d] text-[11px] uppercase tracking-[0.15em] text-white hover:bg-black"
+          className="mt-10 flex h-14 w-full items-center justify-center bg-[#201f1d] text-xs uppercase tracking-[0.15em] text-white hover:bg-black"
         >
           Go to log in
         </Link>
@@ -157,9 +158,9 @@ export default function AuthForm({ view }: { view: View }) {
 
       <div className="space-y-6">
         {view === "signup" && (
-          <Field label="Name" required value={name} onChange={setName} placeholder="Your name" error={errors.name} autoComplete="name" />
+          <Field label="Name" required value={name} onChange={setName} placeholder="Your name" error={errors.name} autoComplete="name" maxLength={200} />
         )}
-        <Field label="Email" required type="email" value={email} onChange={setEmail} placeholder="Your email" error={errors.email} autoComplete="email" />
+        <Field label="Email" required type="email" value={email} onChange={setEmail} placeholder="Your email" error={errors.email} autoComplete="email" maxLength={320} />
         {view !== "forgot" && (
           <Field
             label="Password"
@@ -182,7 +183,7 @@ export default function AuthForm({ view }: { view: View }) {
                 onChange={(e) => setAgeConfirmed(e.target.checked)}
                 aria-invalid={errors.age ? true : undefined}
                 aria-describedby={errors.age ? "age-err" : undefined}
-                className="mt-0.5 h-5 w-5 shrink-0 accent-black"
+                className="h-6 w-6 shrink-0 accent-black"
               />
               I confirm I am 16 or older.
             </label>

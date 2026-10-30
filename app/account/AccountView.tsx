@@ -72,7 +72,7 @@ export default function AccountView() {
         {account.role === "admin" && (
           <Link
             href="/admin"
-            className="flex h-14 w-full items-center justify-center bg-[#201f1d] text-[11px] uppercase tracking-[0.15em] text-white hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+            className="flex h-14 w-full items-center justify-center bg-[#201f1d] text-xs uppercase tracking-[0.15em] text-white hover:bg-black focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
           >
             Open admin
           </Link>
@@ -81,7 +81,7 @@ export default function AccountView() {
           type="button"
           onClick={logout}
           disabled={busy}
-          className="flex h-14 w-full items-center justify-center border border-[#201f1d] text-[11px] uppercase tracking-[0.15em] hover:bg-white disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+          className="flex h-14 w-full items-center justify-center border border-[#201f1d] text-xs uppercase tracking-[0.15em] hover:bg-white disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
         >
           {busy ? "Logging out…" : "Log out"}
         </button>
