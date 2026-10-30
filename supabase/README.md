@@ -1,5 +1,7 @@
 # Database
 
+Local development uses a separate `lyst-dev` project, never production: see `docs/dev-database.md`.
+
 | File | Use it for |
 |---|---|
 | `schema.sql` | A brand-new, empty Supabase project only. Never re-run on the live database. |
