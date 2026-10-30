@@ -5,7 +5,23 @@ const pages = [
   { path: "/login", title: "Log in | LYST" },
   { path: "/signup", title: "Sign up | LYST" },
   { path: "/forgot-password", title: "Forgot password | LYST" },
+  { path: "/privacy", title: "Privacy Policy | LYST" },
+  { path: "/terms", title: "Terms of Service | LYST" },
 ];
+
+test("legal pages are linked from the footer, sign-up and booking", async ({ page }) => {
+  await page.goto("/");
+  const footer = page.locator("footer");
+  await expect(footer.getByRole("link", { name: "Privacy Policy" })).toHaveAttribute("href", "/privacy");
+  await expect(footer.getByRole("link", { name: "Terms of Service" })).toHaveAttribute("href", "/terms");
+  await page.locator("#consultation").getByRole("button", { name: /book a consultation/i }).click();
+  await expect(page.getByRole("dialog").getByRole("link", { name: /Privacy Policy/ })).toHaveAttribute("target", "_blank");
+  await page.goto("/signup");
+  await expect(page.locator("form").getByRole("link", { name: /Terms of Service/ })).toHaveAttribute("href", "/terms");
+  await page.goto("/privacy");
+  await expect(page.locator("article[lang=ka] h2")).toHaveText("კონფიდენციალურობის პოლიტიკა");
+  await expect(page.getByText(/Version 1\.0 · Last updated: 30 October 2026/)).toBeVisible();
+});
 
 for (const { path, title } of pages) {
   test(`${path} loads cleanly`, async ({ page }) => {

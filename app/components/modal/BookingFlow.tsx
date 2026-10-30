@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { NewTabLink } from "../legal/LegalLinks";
 import {
   DemoNote,
   Eyebrow,
@@ -404,7 +405,8 @@ export default function BookingFlow({
       </div>
 
       <DemoNote title="Your details">
-        We use these details only to respond to your request.
+        We use these details only to respond to your request. How we handle them:{" "}
+        <NewTabLink href="/privacy">Privacy Policy</NewTabLink>.
       </DemoNote>
     </>
   );

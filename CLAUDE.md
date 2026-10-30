@@ -35,6 +35,11 @@ Permanent rules for anyone (human or AI) changing this codebase. They apply to e
 ### 7. Age
 - Host accounts are for people aged 16 or older. Sign-up requires ticking the confirmation (`app/components/auth/AuthForm.tsx`); it is recorded as `profiles.age_confirmed_at` (`supabase/schema.sql`). Any new way to create a host account must ask for the same confirmation.
 
+### 8. Privacy Policy and Terms
+- `/privacy` and `/terms` are bilingual drafts (`lib/legal/`), **pending lawyer review** (`docs/legal/README.md`). Never claim on the site that they are reviewed.
+- They must describe what the site actually does. Any change to what is collected, processors (Supabase, Vercel, Upstash, Gmail), cookies or retention means updating both languages, bumping `LEGAL_VERSION` and the date, and logging it in `docs/legal/README.md`.
+- Every form that collects personal data links to them (new tab, so drafts aren't lost): auth pages via `AuthShell`, sign-up consent line, booking dialog note, footer.
+
 ## Design: no "AI-made" tells
 
 Brand: monochrome Radical Premium Minimalism. Near-black `#0b0b0b` on warm off-white `#f6f5f1`, photography carries the colour, hairline rules, generous space, few words. Applies to the site, admin and every invitation template.

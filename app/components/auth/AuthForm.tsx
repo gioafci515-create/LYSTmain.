@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getAccount, requestPasswordReset, signIn, signUp } from "@/app/auth/actions";
+import { NewTabLink } from "../legal/LegalLinks";
 import { Field, PrimaryButton } from "../modal/ui";
 
 type View = "login" | "signup" | "forgot";
@@ -192,6 +193,10 @@ export default function AuthForm({ view }: { view: View }) {
                 Error: {errors.age}
               </p>
             )}
+            <p className="mt-4 text-sm font-light leading-relaxed text-black/80">
+              By signing up, you agree to the <NewTabLink href="/terms">Terms of Service</NewTabLink> and confirm you
+              have read the <NewTabLink href="/privacy">Privacy Policy</NewTabLink>.
+            </p>
           </div>
         )}
       </div>

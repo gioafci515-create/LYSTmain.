@@ -1,6 +1,7 @@
 import Link from "next/link";
+import LegalLinks from "../legal/LegalLinks";
 
-// Full-page frame shared by /login, /signup, /forgot-password, /account and /reset-password.
+// Full-page frame shared by /login, /signup, /forgot-password, /account, /reset-password and the 404 page.
 export default function AuthShell({
   eyebrow = "Host access only",
   title,
@@ -31,6 +32,9 @@ export default function AuthShell({
         <p className="text-xs uppercase tracking-[0.2em]">{eyebrow}</p>
         <h1 className="mt-8 text-[40px] font-light leading-[1.05] tracking-tight md:text-5xl">{title}</h1>
         <div className="mt-8">{children}</div>
+        <p className="mt-12 text-xs text-black/60">
+          <LegalLinks />
+        </p>
       </div>
     </main>
   );

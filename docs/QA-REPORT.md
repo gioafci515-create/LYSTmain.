@@ -27,7 +27,7 @@ What stops a launch is mostly **content and trust**, plus two infrastructure gap
 | Finding | Status |
 |---|---|
 | QA-01, QA-02 | **Fixed**: placeholders removed; footer shows lystinvites@gmail.com, +995 568 13 02 60, Tbilisi, Georgia. A regression test guards against placeholders. |
-| QA-03 | **In progress**: Privacy Policy and Terms drafts (English and Georgian). |
+| QA-03 | **Drafts published, pending lawyer review**: `/privacy` and `/terms` in English and Georgian, version 1.0. Linked from the footer, every auth page, the sign-up consent line and the booking dialog. Review points are in `docs/legal/README.md`. |
 | QA-04, QA-05 | **Open, your settings**: connect Upstash to `lystmain`; set up custom SMTP in Supabase. |
 | QA-06 | **Fixed**: headings are visible without JavaScript. The hero headline animates in CSS from the first paint. Local mobile Lighthouse: LCP 4.7 s → 0.8 s, performance 83 → 100. |
 | QA-07 | **Fixed**: a `noscript` email fallback for booking (the photo part of this finding was wrong; see the correction). |

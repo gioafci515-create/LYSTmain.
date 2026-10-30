@@ -21,6 +21,13 @@ const columns: { title: string; items: Item[]; className?: string }[] = [
     ].filter((i): i is Item => !!i),
   },
   {
+    title: "Legal",
+    items: [
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+    ],
+  },
+  {
     title: "Follow",
     items: socialKeys
       .filter((k) => site.social[k])
