@@ -4,7 +4,7 @@ Original planning material, moved here from the old OneDrive folder on 2026-10-3
 
 | File | What it is |
 |---|---|
-| `SITE-V2.md` | **Current plan** (2026-10-30): product & conversion upgrade, phases and open questions. Awaiting approval. |
+| `SITE-V2.md` | **Current plan**: product & conversion upgrade. Approved 2026-10-31, with decisions, a feature audit and a photo audit. |
 | `LYST_BUILD_PROMPT.md` | First build prompt for the marketing site and core product. |
 | `LYST_FULL_PLATFORM_PROMPT.md` | Full-platform prompt: roles, guest links, host dashboard, admin panel, emails, data model, legal and security requirements. |
 | `.planning/HANDOFF.json` | An empty auto-checkpoint from a planning tool. Kept as it was. |

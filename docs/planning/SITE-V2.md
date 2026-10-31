@@ -1,275 +1,225 @@
 # LYST site v2: product & conversion plan
 
-**Status:** proposal, waiting for approval. Nothing below is built yet. · **Date:** 2026-10-30
+**Status:** approved 2026-10-31, with the answers below. **Building:** phase 0 (languages).
 **Constraints:** minimal premium monochrome; every rule in `CLAUDE.md` (design anti-patterns, legal, security); Lighthouse mobile ≥ 95 on the live site; no third-party requests from the browser.
 
-Your answers to the **Questions** at the end decide the details. Where a decision has an obvious default, it's listed under **Defaults** instead of being asked.
+---
+
+## Decisions (answers of 2026-10-31)
+
+| # | Topic | Decision |
+|---|---|---|
+| 1 | Domain | None yet. Everything reads **one `SITE_URL` env var** (canonical URLs, share images, sitemap, structured data, email links). Default: `https://lystmain.vercel.app`. Switching to `lyst.ge` (or similar) is a one-variable change. |
+| 2 | Email | **Resend with LYST's own domain**, once it exists. Sending sits behind an adapter (`lib/email/`), so switching provider or turning it on is one config change. No Gmail SMTP. Until the domain exists the adapter is "off": inquiries are still saved, and the success screen doesn't promise an email. (Supabase SMTP is also waiting on dashboard access.) |
+| 3 | WhatsApp & hours | +995 568 13 02 60. **Mon–Sat 10:00–20:00 Tbilisi.** Inside those hours: "We reply within 2 hours." Outside: "We'll reply tomorrow morning." Always computed in Tbilisi time, wherever the visitor is. |
+| 4 | Packages | See section 4. Prices are "starting from". **Only features that exist and work today are listed; anything else is labelled "Coming soon".** See the feature audit below. |
+| 5 | Process | Inquiry → proposal **within 24 h**. Essential ready **3 days** after the brief, Signature **7 days**. Revisions per package. Details (time, place, info) can be updated any time after sending, **free**; date changes free. Payment: **50% deposit** to start, **50% before the invitation is sent**, by bank transfer or card payment link. |
+| 6 | Hero | Keep **"Beyond the invitation."** as the hero headline, translated per language (Georgian written natively, listed for review). **"Invite Smarter."** stays English everywhere, as a lockup with the wordmark: **"LYST · Invite Smarter."** in the footer (and on the share image). |
+| 7 | Imagery | Showcases use **typography and LYST's real invitation design**, with **no AI-generated people**. Photo licences: see the photo audit below. |
+| 8 | Planners & venues | A "Work with us" page: benefits (a better experience for their clients, a clean final guest count, credit on recaps) and a **partner inquiry form**. No public commission numbers ("partner terms on request"). |
+| 9 | Russian legal pages | Yes, translated, with a line in every language saying **the Georgian version prevails**. |
+| 10 | Old consultation requests | **Migrated** into Inquiries with source "legacy consultation". No data lost. |
+| 11 | Order | Languages first. |
+| 12 | Envelope | **Direction B.** No hero animation. The envelope appears only in the showcases and the inquiry success state. |
+
+## Feature audit: what is real today
+
+Your rule is to list only features that exist and work. This is what I could verify on 2026-10-31.
+
+**In this repository (the LYST website):** none of the invitation features. It has the marketing site, consultation requests, host accounts (sign-up, login, password reset, account page) and the admin dashboard.
+
+**In the separate `lyst-invite-1/2/3` apps** (live on Vercel; their code is not in this repo, so this was checked from the outside only):
+
+| Feature | Seen? | Evidence |
+|---|---|---|
+| Guest reply with name | yes | reply form; `/api/rsvp` (invite-3) |
+| Plus-ones / companions | yes | "Add companion" field (invite-3), "plus-one" (invite-2) |
+| Dietary / access notes | yes | field (invite-1) |
+| Schedule, dress code, map | yes | sections on all three |
+| Add to calendar | yes | invite-1, invite-2 |
+| Photo uploads + live gallery | yes | `/api/blob/upload`, `/api/gallery`, `/api/live` (invite-2) |
+| Letters | yes | `/api/letters` (invite-1) |
+| Time capsule | yes, protected | `/api/capsule/archive` answers 403 (invite-1) |
+| Push notifications | yes | `/api/push/*` (invite-2) |
+| **Personal link per guest/household with their name** | **not seen** | guests type their own name |
+| **2 reminder rounds** | **not seen** | |
+| **Live guest count for hosts** | **not seen** | |
+| **Up to 3 languages** | **not seen** | all three are English-only |
+| Multi-part events (engagement / ceremony / reception) | not seen | |
+| Voice Guestbook, Smart Seating, recap | not seen | |
+
+**Needed from you:** confirm which of these work in production today and who maintains the `lyst-invite` apps. Until then, the **not seen** items appear on the site only as "Coming soon". Also, `lyst-invite-1` lists `hello@lyst.events` as its contact, but `lyst.events` has no DNS records, so **email to that address bounces today**.
+
+## Photo audit: source and licence
+
+All 15 photos in `public/images/` were added in commit `25919ce` (2026-10-19). They carry **no metadata**: no camera, no generator, no stock-agency tags. Their source and licence can't be determined from the files.
+
+`about-table-hd`, `about-window-hd`, `cap-1-hd`, `cap-2-hd`, `cap-2-m-hd`, `cap-3-hd`, `cap-3-m-hd`, `cap-4-hd`, `cap-4-m-hd`, `cap-5-hd`, `consultation-hd`, `consultation-m-hd`, `experience-hd`, `hero-hd`, `hero-m-hd`: **source unknown, licence unknown.** `lyst-wordmark.png` is LYST's own logo.
+
+**Needed from you:** where they came from (photographer, stock licence, generator and its terms). Per your rule, anything without a clear licence gets replaced. Replacements will come with the source written down in `docs/legal/image-sources.md`.
 
 ---
 
 ## Build order
 
-Your order, with one change I recommend: **languages (7) first**.
+| Phase | Item | Size |
+|---|---|---|
+| 0 | **Languages:** routing, message files, existing copy in ka/en/ru, legal pages per language (with Russian), `SITE_URL` | L |
+| 1 | Header and navigation, "Client login" in the footer, "LYST · Invite Smarter." lockup | S |
+| 2 | Inquiry form + partner inquiry + admin Inquiries (with legacy migration) + email adapter + WhatsApp + reply-time logic | L |
+| 3 | Selected Work: 4 showcase invitations (envelope → invitation → reply → details) | L |
+| 4 | How it works + "Starting from" prices + FAQ | M |
+| 5 | Occasion pages (Weddings, Christenings, Birthdays, Corporate, Work with us) | M |
+| 6 | Sticky mobile CTA (no hero animation, decision 12) | S |
+| 7 | Share image, structured data, wordmark alt text | S |
 
-| Phase | Item | Size | Why this position |
-|---|---|---|---|
-| 0 | **7. Languages** (routing, message files; existing copy moved into ka/en/ru) | L | Every later item adds a lot of copy. Built in English first, it would all have to be redone. |
-| 1 | 4. Header and navigation | S | Small, and every later page uses it. |
-| 2 | 2. Inquiry form + admin + emails + WhatsApp | L | Conversion core; replaces today's booking dialog. |
-| 3 | 1. Selected Work (4 interactive showcase invitations) | L | Biggest design piece; reuses the inquiry CTA. |
-| 4 | 3. How it works + "Starting from" prices + FAQ | M | |
-| 5 | 6. Occasion pages (5) | M | Reuse the blocks from phases 2–4. |
-| 6 | 8. Hero envelope motion + sticky mobile CTA | M | Last, so the motion is designed around the final hero. |
-| 7 | 5. Share image, structured data, alt text | S | Needs the final copy and the domain. |
-
-Each phase is one pushed commit (or a few). Each one gets smoke tests, axe, a Lighthouse check, a privacy-policy update if what's collected changes, and screenshots at 390 and 1440 px for you before the next phase starts.
-
----
+Each phase is pushed separately. Each one gets smoke tests, axe and a Lighthouse check, a Privacy Policy update when what's collected changes, and screenshots at 390 and 1440 px.
 
 ## 0 · Languages: Georgian (default), English, Russian
 
-- **Library:** `next-intl` 4.x (supports Next 16). Routing: `ka` at `/` (no prefix), `en` at `/en/...`, `ru` at `/ru/...`.
-- **No automatic redirects and no language cookie.** The URL decides the language, and the switcher just links to the same page in another language. This means no new cookie to declare in the Privacy Policy, and links people share always open in the language they were shared in.
-- **All copy in message files:** `messages/ka.json`, `en.json` and `ru.json`. No hard-coded user-facing strings. Admin stays English-only (internal).
-- **Wording rules** (added to `CLAUDE.md`):
-  - "RSVP" is never used. Georgian: **„დასწრების დადასტურება“**; English: "attendance confirmation" or "replies"; Russian: «подтверждение присутствия».
-  - **"Invite Smarter."** is never translated. It appears in English in all three languages.
-  - Georgian is written naturally, not translated word for word. Every ka and ru string goes into `docs/planning/copy-review.md` for a native-speaker review before launch.
-- **Fonts:** Inter (self-hosted) gains its Cyrillic subset. Georgian gets **Noto Sans Georgian**, self-hosted under the OFL licence, as a per-character fallback, so Georgian text no longer depends on each device's own font. Everything stays served by our own site.
-- **SEO:** `hreflang` alternates on every page, a `sitemap.xml` covering all three languages, and `<html lang>` set per language.
-- **Formats:** dates, numbers and prices use each language's formatting via `Intl` (e.g. "290 ₾").
-- **Legal pages** move to one page per language (`/privacy`, `/en/privacy`, `/ru/privacy`). Whether Russian gets its own legal text is question 9.
-- **URL change to note:** `/` becomes Georgian. English moves to `/en`.
+- **Library:** `next-intl` 4.x. `ka` at `/` (no prefix), `en` at `/en/...`, `ru` at `/ru/...`. English URL slugs in every language.
+- **No automatic redirects and no language cookie.** The URL decides the language; the switcher links to the same page in another language.
+- **All copy in message files:** `messages/{ka,en,ru}.json`. Admin stays English-only.
+- **Wording rules** (in `CLAUDE.md`):
+  - Never "RSVP". Georgian **„დასწრების დადასტურება“**; English "replies" or "attendance confirmation"; Russian «подтверждение присутствия».
+  - **"Invite Smarter."** is never translated.
+  - Georgian is written natively. Every ka and ru string goes into `docs/planning/copy-review.md` for a native-speaker review.
+- **Fonts, still self-hosted:**
+  - Inter gains its Cyrillic subset.
+  - **Noto Sans Georgian** (OFL licence) is added as the Georgian fallback.
+- **SEO:**
+  - `hreflang` alternates on every page
+  - `sitemap.xml` with all three languages
+  - `<html lang>` set per language
+  - metadata in each language
+- **Legal pages:**
+  - One per language: `/privacy`, `/en/privacy`, `/ru/privacy`.
+  - **Russian translation added.**
+  - Each version says the Georgian version prevails.
+  - Version stays 1.0, since the content is unchanged; adding Russian is logged in `docs/legal/README.md`.
+- **Server messages** (auth and booking errors) become codes that the browser shows in the visitor's language.
+- **URL change:** `/` becomes Georgian; English moves to `/en`.
 
-## 1 · Header and navigation (item 4)
+## 1 · Header and navigation
 
-| | Desktop | Phone |
-|---|---|---|
-| Hero header | Wordmark · Work · How it works · Prices · Occasions · language switch (ქა / EN / RU) · **one CTA button** | Wordmark · language switch · "Menu" (simple full-screen sheet with the same links) |
-| Dynamic Island (after scroll) | Wordmark · current section · CTA | Wordmark · current section (the CTA moves to the sticky bottom bar, item 8) |
-| Footer | adds **"Client login"** (small) → `/login` | same |
+- **Desktop header:** wordmark · Work · How it works · Prices · Occasions · language switch (ქა / EN / RU) · **one CTA**.
+- **Phone header:** wordmark · language switch · "Menu" sheet.
+- **Island:** wordmark · current section · CTA (on phones the CTA moves to the sticky bar).
+- **Footer:** **"LYST · Invite Smarter."**, plus a small **"Client login"** link. Sign-up and Account are unlinked (the routes still work, marked `noindex`).
+- **CTA label:** EN "Plan your invitation" · KA „დაგეგმე მოსაწვევი“ · RU «Спланировать приглашение».
 
-- **CTA label** (one wording everywhere): EN "Plan your invitation" · KA „დაგეგმე მოსაწვევი“ · RU «Спланировать приглашение». It opens the inquiry form.
-- **Account and sign-up:** "Log in", "Sign up" and "Account" are removed from the header and the island. The routes keep working by direct URL (marked `noindex`), so nothing breaks for existing accounts.
-- Only one element is styled as a button (rule: one primary CTA). Nav links use the existing `.ulink` underline.
+## 2 · Inquiry, partner inquiry, admin, email, WhatsApp
 
-## 2 · Inquiry form, admin list, emails, WhatsApp (item 2)
+- **Inquiry fields:**
+  - event type: Wedding · Christening · Birthday · Corporate · Other
+  - event date, or "not decided yet"
+  - guests: up to 50 · 50–100 · 100–200 · 200–500 · 500+
+  - preferred contact: WhatsApp · Phone · Email
+  - name, email (required), phone (required for WhatsApp or Phone), message
+- **How it behaves:** one screen; full-screen on phones; the draft is kept across closing; server-side validation, honeypot, rate limit and timeout.
+- **Partner inquiry** (Work with us): company / venue name, role, city, roughly how many events a year, contact, message. Saved as the inquiry type "partnership".
+- **Next to submit:**
+  - reply-time line (decision 3)
+  - quiet WhatsApp text link
+  - Privacy Policy link
+- **Success state:** an envelope that closes and seals (decision 12, reduced motion respected) and a summary. It promises an email only when the email adapter is on.
+- **Data:**
+  - New `inquiries` table (migration + `schema.sql`).
+  - Fields: kind (event / partnership), event_type, event_date, guests_range, contact_pref, name, email, phone, company, message, locale, source, status (`new` / `contacted` / `proposal` / `booked` / `done`), notes, timestamps.
+  - RLS: admins read and update; inserts only through the server.
+  - **Migration copies every `consultation_requests` row** in with source `legacy consultation` (the old table is kept, read-only).
+- **Admin "Inquiries" tab:**
+  - status filters, search, notes, CSV
+  - one-tap WhatsApp (`wa.me`, greeting pre-filled in the inquiry's language), plus `tel:` and `mailto:`
+- **Email adapter** (`lib/email/`): providers `off` (the default, until there's a domain) and `resend`. When on, it sends an auto-confirmation to the person (in their language) and a new-inquiry alert to lystinvites@gmail.com. Transactional only, with every value escaped.
+- **Legal:** Privacy Policy v1.1 in all three languages: new fields, partner data, Resend as processor once on, WhatsApp messages handled by Meta.
 
-This replaces today's "Book a consultation" dialog (date/time slot picking) with an inquiry for the **event** itself.
+## 3 · Selected Work: four showcase invitations
 
-**Form fields:**
-
-| Field | Input | Rule |
-|---|---|---|
-| Event type | Wedding · Christening · Birthday · Corporate · Other | required |
-| Event date | date picker with "Not decided yet" | optional; past dates rejected |
-| Approximate guests | Up to 50 · 50–100 · 100–200 · 200+ | required. Ranges, so no "0", "‑5" or "99999" |
-| Preferred contact | WhatsApp · Phone · Email | required |
-| Name | text, max 200 | required |
-| Email | max 320 | required (it's where the auto-confirmation goes) |
-| Phone | max 50 | required if WhatsApp or Phone is chosen |
-| Message | max 2,000 | optional |
-
-**Form behaviour:**
-- One calm screen, not a multi-step wizard. On phones it opens full-screen.
-- Each occasion page and showcase pre-selects the event type.
-- The draft is kept across closing (as the booking dialog does now).
-- The same protections as today: server-side validation, honeypot, rate limit, 20 s timeout. It never shows an error as code.
-- Near the submit button: "We reply within 2 hours" (exact hours: question 3), a quiet WhatsApp text link ("Prefer WhatsApp? Message us"), and the Privacy Policy link.
-- **Success state:** "Thank you. We'll reply within 2 hours by <chosen method>", plus a copy of what was sent.
-
-**Data:**
-- New table `inquiries`, created by migration and mirrored into `schema.sql`.
-- Fields: event_type, event_date, guests_range, contact_pref, name, email, phone, message, locale, source, status (`new` / `contacted` / `proposal` / `booked` / `done`), notes, created_at, updated_at.
-- RLS (row-level security): admins can read and update. Inserts happen only through the server route.
-- What happens to the existing `consultation_requests` is question 10.
-
-**Admin:** the "Bookings" tab becomes **"Inquiries"**:
-- A list with status filters and search, a detail sheet with notes, and CSV export.
-- One-tap **WhatsApp** (`https://wa.me/<number>?text=…`, with a greeting pre-filled in the inquiry's language), plus `tel:` and `mailto:` links.
-- The overview KPIs switch to inquiries.
-
-**Emails** (transactional only, per CLAUDE.md rule 6):
-- (a) An **auto-confirmation** to the person, in their language: what we received, when we'll reply, and our contacts.
-- (b) A **new-inquiry alert** to lystinvites@gmail.com, which also fixes QA-11.
-- Plain, monochrome HTML with a text version. Every value is escaped.
-- The provider is question 2. The same provider then fixes Supabase sign-up emails (QA-05).
-
-**WhatsApp:**
-- **Quiet**: a text link, plus an icon in the mobile sticky bar. No floating chat bubble, and no WhatsApp script or widget. It's a plain `wa.me` link, so no third-party request happens until someone taps it (legal rule 1).
-
-**Legal:** Privacy Policy v1.1 in all its languages (new fields, the email provider, a note that WhatsApp messages are handled by Meta), logged in `docs/legal/README.md`.
-
-## 3 · Selected Work: four showcase invitations (item 1)
-
-- **Four fictional invitations.** All names and details are invented and marked "Showcase". No real guest data.
-  - **Wedding:** "Nino & Giorgi", an evening in Kakheti
-  - **Christening:** "Luka's christening", Sioni
-  - **Birthday:** "Ana is 30", a rooftop dinner
-  - **Corporate:** "Annual gala 2027", a product evening
-- **On the home page:** a 4-card grid (2×2 on phones). Each card shows the invitation's cover and the occasion.
+- **Four fictional invitations, marked "Showcase":** Wedding "Nino & Giorgi" · Christening "Luka's christening" · Birthday "Ana is 30" · Corporate "Annual gala 2027".
+- **Look:** typography and LYST's real invitation design language (decision 7), no AI-generated people, no child imagery.
+- **Flow:**
+  1. Envelope opens.
+  2. Invitation.
+  3. „დასწრების დადასტურება“ reply. Local only, no network request; a "This is a showcase, nothing is sent" note.
+  4. Details: schedule, dress code, a static map image with an "Open in Maps" link (no embedded map).
 - **Opening:**
-  - On **desktop** the invitation opens in a dialog inside a minimal **phone frame**: a thin 1 px ink outline with a rounded rectangle and no fake status bar.
-  - On **phones** it opens full-screen, because a phone inside a phone looks odd.
-  - Each also has its own URL (`/work/wedding` and so on) for sharing.
-- **Flow inside each invitation:**
-  1. **Envelope:** closed, with the names; "Open" (tap or Enter).
-  2. **Invitation:** design, date, hosts, a short message.
-  3. **Response:** „დასწრების დადასტურება“: Attending / Can't attend, plus guests and a note. It's local only: a gentle "This is a showcase, nothing is sent" confirmation, with **no network request**.
-  4. **Details:** schedule, dress code, venue as a **static image with an "Open in Maps" link** (no embedded map: legal rule 1), and the host's contact.
-- **One reusable `<Invitation>` renderer driven by data** (`content/showcases/*.ts`). The same renderer can later power real invitations.
-- **Loaded only when opened** (dynamic import), so the home page doesn't get heavier.
-- **Accessibility:** a focus trap; Escape closes; Back closes (as with booking); reduced motion makes the envelope open instantly.
-- **No visitor tracking** inside showcases.
-- **Children (legal rule 3):** the christening showcase uses no child photos at all, only typography and objects (candle, cross, linen).
-- **Imagery** is question 7. The showcase style should match what you actually deliver; question 7 also asks about the `lyst-invite-*` projects.
+  - Desktop: a dialog with a thin phone frame.
+  - Phones: full-screen.
+  - Each also has its own URL (`/work/<slug>`).
+- **Under the hood:**
+  - One data-driven `<Invitation>` renderer.
+  - Loaded only when opened.
+  - Focus trap; Escape and Back close it; reduced motion respected; no tracking.
 
-## 4 · How it works, prices, FAQ (item 3)
+## 4 · How it works, prices, FAQ
 
-**How it works** replaces "The Experience" section. It's a 5-step horizontal timeline on desktop and a vertical one on phones, with the existing hairline rules and numbered labels:
-1. **Tell us about your event:** the inquiry, answered within 2 hours.
-2. **Proposal:** style, package and price. *Timing: question 5.*
-3. **Design:** your invitation, with revision rounds. *Timing and number of rounds: question 5.*
-4. **Send and follow replies:** one link for every guest; „დასწრების დადასტურება“ answers arrive in real time.
-5. **On the day:** schedule, map and last-minute updates in the same link.
+**How it works** (replaces "The Experience"):
+1. Tell us about your event: the inquiry, with the reply-time line.
+2. **Proposal within 24 hours.**
+3. Design: **ready in 3 days (Essential) or 7 days (Signature)**, with revision rounds.
+4. Send and follow replies: one link; „დასწრების დადასტურება“ replies arrive as guests answer.
+5. On the day: schedule, map and updates. **Details can be changed any time, free.**
 
-(The "after the event" memories step comes back once photos and uploads are built. Until then it isn't promised.)
-
-**"Starting from" prices:** three columns. Essential and Signature say "from"; only the recommended one (Signature) gets a quiet "Most chosen" label.
+**"Starting from" prices** (₾ only; no guest limit stated: "up to 500 guests included, larger on request"):
 
 | | Essential | Signature | Atelier |
 |---|---|---|---|
-| Price | **from 290 ₾** | **from 590 ₾** | **on request** |
-| What's included | *Draft, question 4* | *Draft, question 4* | *Draft, question 4* |
+| Weddings | **from 290 ₾** | **from 590 ₾** | **on request** |
+| Christenings & birthdays | **from 190 ₾** | **from 390 ₾** | **on request** |
+| Includes (your list; *italic* = Coming soon unless you confirm it works today) | designed invitation from a LYST collection · *personal link per guest/household with their name* · replies incl. plus-ones · schedule + map + dress code · *2 reminder rounds* · *live guest count* · *up to 3 languages* · 1 revision round · ready in 3 days | custom-styled design · *multi-part events* · guest experiences (only those confirmed working) · 3 revision rounds · ready in 7 days | fully bespoke design and motion intro · all experiences · event-day support |
 
-The draft inclusions for question 4 are below, based on `LYST_BUILD_PROMPT.md` and what the site offers today:
-- **Essential:** one LYST style adapted to your event · your text and up to 3 photos · venue with map link · one personal link for all guests · „დასწრების დადასტურება“ with plus-ones · downloadable guest list · one language · 1 revision round.
-- **Signature:** a design made around your story · envelope opening · schedule, dress code and guest FAQ · reminders to guests who haven't answered · two languages · 2 revision rounds.
-- **Atelier:** fully bespoke art direction and illustration · several events (e.g. engagement and wedding) · all three languages · a personal coordinator.
+Corporate pricing: on request. Signature is labelled "Most chosen".
 
-**FAQ:** an accessible accordion (`<details>`, so it works without JavaScript), plus FAQ structured data. The questions below are drafted; the answers marked *(?)* need your facts (question 5):
-- Do guests need an app or an account? *(No: they open a link.)*
-- Which languages can our invitation be in? *(Georgian, English, Russian.)*
-- How long does it take? *(?)*
-- How many changes can we ask for? *(?)*
-- Can we change details after sending? *(?)*
-- How do guests confirm attendance, and how do we see the replies?
-- How do we pay? *(?)*
-- Is our guests' information private? *(Yes, with a link to the Privacy Policy.)*
-- Do you work with planners and venues? *(Link to that page.)*
+**FAQ** (answers from decision 5; `<details>` accordion plus FAQ structured data):
+- **Do guests need an app or an account?** No: they open a link.
+- **Which languages?** Georgian, English, Russian. Shown as Coming soon until confirmed (feature audit).
+- **How long does it take?** A proposal within 24 h; ready in 3 or 7 days after the brief.
+- **How many changes can we ask for?** 1, 3, or unlimited bespoke rounds, by package.
+- **Can we change details after sending?** Yes: time, place and information any time, free; date changes free.
+- **How do guests confirm attendance, and how do we see the replies?** One tap; you see the replies (the live count is Coming soon unless confirmed).
+- **How do we pay?** 50% deposit to start, 50% before sending, by bank transfer or card payment link.
+- **Is our guests' information private?** Yes, with a link to the Privacy Policy.
+- **Do you work with planners and venues?** Yes: link to Work with us.
 
-## 5 · Occasion pages (item 6)
+## 5 · Occasion pages
 
-Five pages:
-- `/weddings`
-- `/christenings`
-- `/birthdays`
-- `/corporate`
-- `/planners` (For planners & venues)
+- **Pages:** `/weddings`, `/christenings`, `/birthdays`, `/corporate`, `/planners` (Work with us). Each has its own metadata and structured data.
+- **Blocks on each page:**
+  - occasion hero
+  - three "What LYST does for you" points
+  - the matching showcase
+  - condensed How it works
+  - that occasion's prices
+  - relevant FAQ entries
+  - the inquiry form with the event type pre-selected (on the planners page, the partner form)
+- **Christenings:** no child imagery.
+- **Corporate:** invoices, languages, large guest lists, "on request" pricing.
 
-They use English slugs in every language: `/en/weddings`, `/ru/weddings`. Each page has its own title, description, share image and structured data.
+## 6 · Sticky mobile CTA
 
-**Each page reuses the same blocks, in this order:**
-- an occasion hero (a photo or the showcase cover, plus the headline)
-- "What LYST does for your <occasion>": 3 short points
-- the matching **showcase invitation**, openable in place
-- "How it works", condensed
-- "Starting from" prices
-- the 4–5 most relevant FAQ entries
-- the inquiry form with the event type pre-selected
+- **When:** phones only, after the hero header has scrolled away.
+- **What:** a 56 px bar with the CTA and a small WhatsApp icon link.
+- **Placement:** respects the safe area, with matching page padding.
+- **Hides:** over the inquiry form, a showcase or the footer.
+- **One primary CTA:** the island drops its own CTA on phones.
 
-**Christenings:** no child imagery (legal rule 3). Copy mentions that guest photos are private by default.
+## 7 · Share image, structured data, alt text
 
-**Corporate:** a professional tone; mentions invoices, multiple languages and large guest lists. This also addresses QA persona 3.
-
-**Planners & venues:** the offer is question 8. Until you answer, the page is "Work with us" plus the inquiry form with event type "Partnership".
-
-## 6 · Hero envelope motion and sticky mobile CTA (item 8)
-
-**Envelope motion: recommended direction (A).**
-- On first load, the hero photo is revealed as if lifted from an envelope. A warm off-white panel (`#f6f5f1`) covers the photo.
-- The panel's **flap** opens: a 1 px ink line and a triangle, `rotateX`, about 500 ms, using the existing `--spring` easing.
-- Then the panel slides down out of view (about 600 ms, `--reveal-ease`) and the photo settles, reusing the existing `hero-zoom`.
-- **The headline is not part of the animation.** It's visible from the first frame (as fixed in QA-06), so LCP stays where it is now (live mobile 2.4 s, target ≤ 2.5 s).
-- **Implementation:** CSS only (transform, opacity and clip-path), so it runs without JavaScript, with no layout shift. It plays **once per visit** (`sessionStorage`); later visits show the final state.
-- **Reduced motion:** no animation at all.
-- **Rules:** added to `CLAUDE.md` as the one signature motion, alongside the headline reveal, photo settle, dividers and island.
-- **Quieter alternative (B):** no hero animation. The envelope motif only appears where it means something: opening a showcase invitation, and the inquiry success state.
-
-**Sticky mobile CTA** (phones only):
-- **Appears** once the hero header has scrolled away (the same trigger as the island).
-- **Contents:** a 56 px bottom bar with the CTA button and a small WhatsApp icon link.
-- **Placement:** it respects the iPhone home-bar safe area, and the page gets matching bottom padding so nothing is hidden behind it.
-- **Hides** while the inquiry form, a showcase or the footer is on screen. It never covers form fields.
-- **Rule compliance:** on phones the island drops its own CTA, so there's still only one primary CTA on screen.
-
-## 7 · Share image, structured data, alt text (item 5)
-
-- **Share image** (1200×630, monochrome):
-  - wordmark, "Invite Smarter." and a thin-line envelope, on `#f6f5f1`.
-  - Generated at build time with `next/og`, in each language (the tagline is never translated).
-  - Each occasion page gets its own variant with the occasion name.
-  - Needs a TTF/WOFF copy of Inter in `app/fonts/` (OFL); `next/og` can't read `.woff2`.
-  - Twitter/X uses the large-image card.
-- **Structured data (JSON-LD):** `Organization` + `LocalBusiness`. Fields:
-  - name LYST, url, logo
-  - email lystinvites@gmail.com, telephone +995 568 13 02 60
-  - address Tbilisi, GE
-  - `sameAs` Instagram and TikTok
-  - `priceRange`, and opening hours from question 3
-  - plus `FAQPage` on pages with an FAQ
-  - It's a data block, not executed script, so the CSP doesn't change.
-- **Wordmark alt text:** "LYST" wherever the image is the content. Where it sits inside a link that already has a name (back to top), it stays `alt=""` so screen readers don't hear it twice. That's checked page by page.
-- **Needs the production domain (question 1)** for canonical URLs, share links and structured data.
+- **Share image:** `next/og`, 1200×630, monochrome, on `#f6f5f1`, showing "LYST · Invite Smarter." and a thin-line envelope.
+  - Made in each language, with a variant per occasion page.
+  - Needs a TTF/WOFF copy of Inter in `app/fonts/`.
+- **Structured data (JSON-LD):** `Organization` + `LocalBusiness` (opening hours Mon–Sat 10:00–20:00, Tbilisi), and `FAQPage` where there's an FAQ.
+- **Wordmark alt text:** "LYST" where the image is the content; empty where the surrounding link already names it.
 
 ## Cross-cutting
 
-- **Home page order (v2):** Hero → short intro (condensed About) → **Selected Work** → Capabilities (what's included) → **How it works** → **Prices** → **Occasions** (5 cards linking to the pages) → **FAQ** → **Inquiry** (replaces the Consultation section) → Footer.
-- **Performance budgets** (each phase must pass them on the live site):
-  - mobile LCP ≤ 2.5 s, CLS ≤ 0.05
-  - no growth in home-page JavaScript from showcases (they load on demand)
-  - images: the QA-12 changes (quality 75 on phones, AVIF) folded into phase 3
-- **Security:** inquiries reuse the hardened booking path (server validation, rate limit `inquiry`, honeypot, escaped emails). Admin routes keep `requireAdmin()` with RLS.
-- **Tests:** Playwright for every feature, in all three languages for the key flows. Real submissions run against the `lyst-dev` database (not production); mocked responses are used elsewhere. Plus axe and a Lighthouse check per phase.
-- **CLAUDE.md additions:**
-  - i18n/copy rules (message files, the „დასწრების დადასტურება“ wording, the untranslated tagline, copy review)
-  - the signature motion
-  - showcase rules (fictional data, no network calls, no child photos)
+- **Home page order:** Hero → short intro → Selected Work → Capabilities → How it works → Prices → Occasions → FAQ → Inquiry → Footer.
+- **Budgets** (live, mobile): LCP ≤ 2.5 s, CLS ≤ 0.05, no growth in home-page JavaScript from showcases. Images at quality 75 on phones, in AVIF.
+- **CLAUDE.md additions:** language and copy rules, showcase rules (fictional data, no network calls, no child photos), and the "only real features" rule.
 
-## Defaults (I'll use these unless you say otherwise)
+## Still open (needs you)
 
-1. English URL slugs in all languages (`/ru/weddings`).
-2. No language auto-detection, no language cookie.
-3. Admin stays English-only.
-4. Email is always required in the inquiry; phone is required only for WhatsApp/phone contact.
-5. Guests are chosen as ranges, not typed numbers.
-6. Showcases open in a dialog on desktop, full-screen on phones, and each has its own shareable URL.
-7. `/login`, `/signup` and `/account` keep working but are unlinked (except "Client login" in the footer) and `noindex`.
-8. Prices are shown in ₾ only.
-9. No floating WhatsApp bubble.
-
-## Questions for you
-
-1. **Domain.** What's the production domain (e.g. `lyst.ge`)? It's needed for share images, canonical URLs, structured data and the email sender. If there isn't one yet, is `lystmain.vercel.app` fine for now?
-2. **Email provider for the auto-confirmation (and to fix Supabase emails, QA-05):**
-   - (a) **Resend** with your own domain: best deliverability, needs DNS records on the domain.
-   - (b) **Gmail SMTP** from lystinvites@gmail.com with an app password: works today, about 500 emails a day, weaker deliverability.
-
-   Which one?
-3. **WhatsApp and reply time.** Is WhatsApp the same number (+995 568 13 02 60)? "We reply within 2 hours": during which hours and days (e.g. 10:00–20:00 Tbilisi, every day)? What should it say outside those hours ("we reply by 10:00 the next morning")?
-4. **Packages.** Confirm or correct the draft inclusions for Essential / Signature / Atelier in section 4, especially the guest limits (if any), languages and revision rounds.
-5. **Facts for How it works and the FAQ:**
-   - How long from inquiry to proposal, and from approval to a finished invitation?
-   - How many revision rounds?
-   - Can details be changed after sending?
-   - How do clients pay (bank transfer or card; deposit or not)?
-6. **Hero headline.** Should **"Invite Smarter."** become the hero headline (in English, in every language)? Or stay as the tagline (share image, footer) with the current "Beyond the invitation." translated as the headline?
-7. **Imagery and real invitations.** The Vercel account has `lyst-invite-1`, `-2` and `-3`. Are those your real invitations? If so, the showcases should match their format and features. For showcase and occasion visuals, which should I use:
-   - (a) typography-only invitations (no photos)
-   - (b) generated imagery like the current site's
-   - (c) photos you supply
-8. **Planners and venues.** What's the offer: a referral commission, partner pricing, co-branded or white-label invitations? Or just "work with us" for now?
-9. **Russian legal pages.** Translate the Privacy Policy and Terms into Russian too (more lawyer-review work)? Or keep them in Georgian and English and link from the Russian site?
-10. **Existing consultation requests.** Move them into the new Inquiries list, or keep them as a read-only "Archive" tab?
-11. **Order.** OK to build languages first (phase 0), as recommended above?
-12. **Envelope motion.** Direction A (photo revealed from an envelope on first load) or B (no hero animation; envelope only in showcases and the inquiry success state)?
+1. **`lyst-invite` apps:** which features work in production, and who maintains them? (Feature audit.) Also, the `hello@lyst.events` contact bounces.
+2. **Photo sources and licences** for the 15 site photos. (Photo audit.)
+3. **Supabase dashboard access**, for SMTP settings and the `lyst-dev` project.
