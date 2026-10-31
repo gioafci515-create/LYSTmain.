@@ -6,9 +6,12 @@ import { test as base, expect } from "@playwright/test";
 //   automated browsers, which matters because a keepalive beacon can outlive a closing test page.)
 // - any console error, uncaught page error, CSP violation (Chrome reports those as console
 //   errors) or request to another origin fails the test (CLAUDE.md: no third-party requests).
-export const test = base.extend<{ guard: void }>({
+// A test that expects some of these (e.g. a 404 page logs "status of 404") lists them with
+// test.use({ allowedProblems: [/pattern/] }).
+export const test = base.extend<{ guard: void; allowedProblems: RegExp[] }>({
+  allowedProblems: [[], { option: true }],
   guard: [
-    async ({ page, baseURL }, use) => {
+    async ({ page, baseURL, allowedProblems }, use) => {
       const problems: string[] = [];
       const origin = new URL(baseURL!).origin;
 
@@ -23,7 +26,8 @@ export const test = base.extend<{ guard: void }>({
       });
 
       await use();
-      expect(problems, "console errors, page errors, CSP violations or third-party requests").toEqual([]);
+      const unexpected = problems.filter((p) => !allowedProblems.some((re) => re.test(p)));
+      expect(unexpected, "console errors, page errors, CSP violations or third-party requests").toEqual([]);
     },
     { auto: true },
   ],

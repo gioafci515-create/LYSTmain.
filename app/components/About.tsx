@@ -1,21 +1,11 @@
+import { useTranslations } from "next-intl";
 import Photo from "./Photo";
 import Reveal from "./Reveal";
 import RevealText from "./RevealText";
 
-const features = [
-  {
-    index: "01",
-    title: "Bespoke design",
-    body: "Every invitation is a custom creation, thoughtfully designed around your story, your people and your occasion.",
-  },
-  {
-    index: "02",
-    title: "Connected experience",
-    body: "Invitations, guest responses and every detail of your event, kept together in one place.",
-  },
-];
+type FeatureText = { index: string; title: string; body: string };
 
-function Feature({ index, title, body }: (typeof features)[number]) {
+function Feature({ index, title, body }: FeatureText) {
   return (
     <div>
       <p className="text-xs tracking-wide">{index}</p>
@@ -29,25 +19,29 @@ function Feature({ index, title, body }: (typeof features)[number]) {
   );
 }
 
-const tableAlt = "Linen-covered table with olive branches, wine glass and lemons";
-const windowAlt = "Stone interior with a vase and olive branches by a tall window";
-
 export default function About() {
+  const t = useTranslations("about");
+  const sections = useTranslations("sections");
+  const features: FeatureText[] = (t.raw("features") as Omit<FeatureText, "index">[]).map((f, i) => ({
+    ...f,
+    index: String(i + 1).padStart(2, "0"),
+  }));
+  const tableAlt = t("tableAlt");
+  const windowAlt = t("windowAlt");
   return (
     <section id="about" className="px-6 py-16 md:px-10 md:py-20 xl:px-20">
       <div className="mx-auto max-w-[1760px]">
         <Reveal variant="fade">
-          <p className="mb-6 text-xs uppercase tracking-[0.2em] md:hidden">02 / About</p>
+          <p className="mb-6 text-xs uppercase tracking-[0.2em] md:hidden">{sections("about")}</p>
         </Reveal>
         <div className="md:flex md:items-start md:justify-between">
           <RevealText
-            lines={["More than", "an invitation."]}
+            lines={t.raw("headline") as string[]}
             className="text-[40px] font-light leading-[1.05] tracking-tight md:text-[56px]"
           />
           <Reveal delay={250} className="mt-8 md:mt-10">
             <p className="max-w-[300px] text-base font-light leading-relaxed text-black/80 md:text-sm">
-              We create bespoke digital invitations and connected event
-              experiences for life&apos;s most meaningful moments.
+              {t("intro")}
             </p>
           </Reveal>
         </div>

@@ -10,17 +10,17 @@ const str = (v: unknown, max: number) =>
 
 export async function POST(req: Request) {
   if (await rateLimited("booking", visitorIp(req.headers))) {
-    return Response.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+    return Response.json({ error: "rateLimited" }, { status: 429 });
   }
   if (Number(req.headers.get("content-length") ?? 0) > 20_000) {
-    return Response.json({ error: "Request too large." }, { status: 413 });
+    return Response.json({ error: "tooLarge" }, { status: 413 });
   }
 
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return Response.json({ error: "Invalid request." }, { status: 400 });
+    return Response.json({ error: "invalidRequest" }, { status: 400 });
   }
 
   // Honeypot: real users never fill this hidden field.
@@ -33,18 +33,19 @@ export async function POST(req: Request) {
   const date = str(body.date, 10);
   const time = str(body.time, 50);
 
+  // Values are error codes; the booking dialog shows them in the visitor's language.
   const fields: Record<string, string> = {};
-  if (!name) fields.name = "Enter your name.";
-  if (!EMAIL_RE.test(email)) fields.email = "Enter a complete email address.";
+  if (!name) fields.name = "nameRequired";
+  if (!EMAIL_RE.test(email)) fields.email = "emailInvalid";
   if (!DATE_RE.test(date) || Number.isNaN(Date.parse(`${date}T00:00:00Z`))) {
-    fields.date = "Choose a date.";
+    fields.date = "dateRequired";
   } else {
     const d = Date.parse(`${date}T00:00:00Z`);
     const today = Date.parse(new Date().toISOString().slice(0, 10) + "T00:00:00Z");
-    if (d < today - 86_400_000 || d > today + 400 * 86_400_000) fields.date = "Choose a date in the coming months.";
+    if (d < today - 86_400_000 || d > today + 400 * 86_400_000) fields.date = "dateRange";
   }
-  if (!time) fields.time = "Choose a time.";
-  if (Object.keys(fields).length) return Response.json({ error: "Please check your details.", fields }, { status: 400 });
+  if (!time) fields.time = "timeRequired";
+  if (Object.keys(fields).length) return Response.json({ error: "checkDetails", fields }, { status: 400 });
 
   const source = detectSource({
     referrerHost: hostOf(str(body.referrer, 2000)),
@@ -65,7 +66,7 @@ export async function POST(req: Request) {
     if (error) throw error;
   } catch (err) {
     console.error("consultation insert failed", err);
-    return Response.json({ error: "We could not save your request. Please try again." }, { status: 500 });
+    return Response.json({ error: "saveFailed" }, { status: 500 });
   }
 
   return Response.json({ ok: true });

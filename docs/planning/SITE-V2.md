@@ -1,6 +1,6 @@
 # LYST site v2: product & conversion plan
 
-**Status:** approved 2026-10-31, with the answers below. **Building:** phase 0 (languages).
+**Status:** approved 2026-10-31, with the answers below. **Built:** phase 0 (languages), 2026-10-31. **Next:** phase 1 (header and navigation).
 **Constraints:** minimal premium monochrome; every rule in `CLAUDE.md` (design anti-patterns, legal, security); Lighthouse mobile ≥ 95 on the live site; no third-party requests from the browser.
 
 ---

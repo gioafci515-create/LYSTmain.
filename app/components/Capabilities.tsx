@@ -1,47 +1,34 @@
+import { useTranslations } from "next-intl";
 import Photo from "./Photo";
 import Reveal from "./Reveal";
 import SectionHeading from "./SectionHeading";
 
-const items = [
+// Same order as capabilities.items in messages/*.json.
+const photos = [
   {
-    title: "Bespoke invitations",
-    body: "Unique designs that set the tone for your event, crafted around your story.",
     desktop: "/images/cap-1-hd.jpg",
     mobile: "/images/cap-1-hd.jpg",
     ratios: [2 / 3, 2 / 3],
-    alt: "Phone showing a digital invitation on a stone table with olives",
   },
   {
-    title: "Guest management",
-    body: "Send, track and manage with ease, all in one place.",
     desktop: "/images/cap-2-hd.jpg",
     mobile: "/images/cap-2-m-hd.jpg",
     ratios: [3 / 4, 2 / 3],
-    alt: "Guests mingling at an evening reception",
   },
   {
-    title: "Interactive experiences",
-    body: "Guest photos, voice messages, polls and more, for a more engaging event.",
     desktop: "/images/cap-3-hd.jpg",
     mobile: "/images/cap-3-m-hd.jpg",
     ratios: [3 / 4, 3 / 2],
-    alt: "Friends laughing around a table by the sea",
   },
   {
-    title: "Real-time updates",
-    body: "Share changes, important details and last-minute information instantly.",
     desktop: "/images/cap-4-hd.jpg",
     mobile: "/images/cap-4-m-hd.jpg",
     ratios: [3 / 4, 4 / 3],
-    alt: "Crowd at an outdoor festival at sunset",
   },
   {
-    title: "Lasting memories",
-    body: "A shared space to relive and keep the moments that matter.",
     desktop: "/images/cap-5-hd.jpg",
     mobile: "/images/cap-5-hd.jpg",
     ratios: [3 / 4, 3 / 4],
-    alt: "Printed event photographs on a stone table",
   },
 ];
 
@@ -52,13 +39,17 @@ const DESKTOP_CARD = 2 / 3;
 const widen = (photo: number, card: number) => Math.max(1, photo / card);
 
 export default function Capabilities() {
+  const t = useTranslations("capabilities");
+  const sections = useTranslations("sections");
+  const text = t.raw("items") as { title: string; body: string; alt: string }[];
+  const items = photos.map((p, i) => ({ ...p, ...text[i] }));
   return (
     <section id="capabilities" className="px-6 py-16 md:px-10 md:py-20 xl:px-20 xl:py-20">
       <div className="mx-auto max-w-[1760px]">
         <SectionHeading
-          label="03 / Capabilities"
-          lines={["One invitation.", "More possibilities."]}
-          intro="A more connected way to bring people together: before, during and after the event."
+          label={sections("capabilities")}
+          lines={t.raw("headline") as string[]}
+          intro={t("intro")}
         />
 
         <ol className="mt-14 grid gap-12 md:grid-cols-2 md:gap-x-6 xl:grid-cols-5 xl:gap-x-6">
@@ -68,7 +59,7 @@ export default function Capabilities() {
             const m = widen(item.ratios[0], MOBILE_CARD);
             const d = widen(item.ratios[1], DESKTOP_CARD);
             return (
-              <li key={item.title}>
+              <li key={item.desktop}>
                 <Reveal variant="photo" delay={delay}>
                   <Photo
                     src={item.mobile}

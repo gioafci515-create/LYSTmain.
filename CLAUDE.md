@@ -36,9 +36,23 @@ Permanent rules for anyone (human or AI) changing this codebase. They apply to e
 - Host accounts are for people aged 16 or older. Sign-up requires ticking the confirmation (`app/components/auth/AuthForm.tsx`); it is recorded as `profiles.age_confirmed_at` (`supabase/schema.sql`). Any new way to create a host account must ask for the same confirmation.
 
 ### 8. Privacy Policy and Terms
-- `/privacy` and `/terms` are bilingual drafts (`lib/legal/`), **pending lawyer review** (`docs/legal/README.md`). Never claim on the site that they are reviewed.
-- They must describe what the site actually does. Any change to what is collected, processors (Supabase, Vercel, Upstash, Gmail), cookies or retention means updating both languages, bumping `LEGAL_VERSION` and the date, and logging it in `docs/legal/README.md`.
+- `/privacy` and `/terms` are drafts in Georgian, English and Russian (`lib/legal/`), **pending lawyer review** (`docs/legal/README.md`). Never claim on the site that they are reviewed. Every language version says the Georgian version prevails.
+- They must describe what the site actually does. Any change to what is collected, processors (Supabase, Vercel, Upstash, Gmail), cookies or retention means updating all three languages, bumping `LEGAL_VERSION` and the date, and logging it in `docs/legal/README.md`.
 - Every form that collects personal data links to them (new tab, so drafts aren't lost): auth pages via `AuthShell`, sign-up consent line, booking dialog note, footer.
+
+## Languages and copy
+
+The public site is Georgian at `/` (default), English at `/en`, Russian at `/ru` (next-intl, `i18n/`). Admin is English only.
+
+1. **No text in components.** Every visible string, alt text, aria-label and page title lives in `messages/{ka,en,ru}.json`, with the same keys in all three (the e2e test `i18n.spec.ts` fails otherwise). Add a key to all three files in the same change.
+2. **Never "RSVP"**, in any language. Georgian: „დასწრების დადასტურება“. English: "replies" or "attendance confirmation". Russian: «подтверждение присутствия».
+3. **"Invite Smarter."** is never translated.
+4. **Georgian is written natively**, not translated word for word. Every new or changed ka/ru string goes into `docs/planning/copy-review.md` for a native-speaker review (regenerate it from the message files).
+5. **The URL decides the language.** No redirects by browser language and no language cookie. Language links point straight at the final URL (`LanguageSwitch`); internal links use `Link` from `@/i18n/navigation` so they stay in the visitor's language. `/admin` is linked with `next/link` (no prefix).
+6. **Server messages are codes.** API routes and Server Actions return error codes (`booking.errors.*`, `errors.*`); the browser shows them in the visitor's language. Never return an English sentence to the public site.
+7. **Dates and lists** go through `lib/intl.ts` (browsers often lack Georgian data and fall back to English).
+8. **SEO per page:** call `pageLocale(params)` at the top of every page and build metadata with `pageMeta()` (`lib/page-meta.ts`): title in the page's language, canonical and hreflang alternates. Public pages go into `app/sitemap.ts`. Every absolute URL comes from `site.url` (env `SITE_URL`), never a hard-coded domain.
+9. **Fonts** stay self-hosted: Inter (Latin + Cyrillic) and Noto Sans Georgian, each with its unicode-range (`lib/fonts.ts`).
 
 ## Design: no "AI-made" tells
 
@@ -76,6 +90,6 @@ Brand: monochrome Radical Premium Minimalism. Near-black `#0b0b0b` on warm off-w
 7. **Payments.** Verify every webhook signature with the provider's SDK on the raw body. Recalculate amounts on the server from our own prices; never trust an amount, price or "paid" flag from the browser. An order becomes paid only from a verified webhook.
 8. **Security headers** are set in `next.config.ts` for every route: CSP (`default-src 'self'`, `frame-ancestors 'none'`, `object-src 'none'`), HSTS, `X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`. Loosen a directive only for a specific need, in that file, with a comment.
 9. **XSS.** Host story text, guest messages and names are rendered as React text, never with `dangerouslySetInnerHTML`. If markdown or rich text is ever supported, render it with a sanitiser (allow-list of tags, no raw HTML, no `javascript:` links).
-10. **Errors and logs.** Users see fixed, friendly sentences. Stack traces, Supabase/Postgres error messages and codes go to the server log (`console.error`) only, never into a response body or the UI. Never log passwords, tokens or full request bodies; Server Action argument logging stays off (`logging.serverFunctions: false` in `next.config.ts`).
+10. **Errors and logs.** Users see fixed, friendly sentences (sent by the server as codes and shown in the visitor's language). Stack traces, Supabase/Postgres error messages and codes go to the server log (`console.error`) only, never into a response body or the UI. Never log passwords, tokens or full request bodies; Server Action argument logging stays off (`logging.serverFunctions: false` in `next.config.ts`).
 11. **Rate limits** on every public write: login, sign-up, password reset, consultation and response (RSVP) forms, uploads, tracking. Use `rateLimited(name, id)` from `lib/rate-limit.ts` (Upstash Redis, shared across instances) with a named limit added to `LIMITS`; key by `visitorIp()` (Vercel's own headers, not spoofable) and never put raw IPs or emails in Redis keys (they are hashed). Without `UPSTASH_REDIS_REST_URL`/`_TOKEN` it falls back to per-instance memory, which is not acceptable in production.
 12. **Database changes** go in a new file in `supabase/migrations/` (additive, one transaction), mirrored into `supabase/schema.sql`. Never re-run `schema.sql` on the live database. Back up first (`supabase/README.md`).

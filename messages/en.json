@@ -1,0 +1,285 @@
+{
+  "meta": {
+    "homeTitle": "LYST | Beyond the invitation",
+    "homeDescription": "Bespoke digital invitations and connected event experiences.",
+    "login": "Log in | LYST",
+    "signup": "Sign up | LYST",
+    "forgot": "Forgot password | LYST",
+    "reset": "Choose a new password | LYST",
+    "account": "Your account | LYST",
+    "privacyTitle": "Privacy Policy | LYST",
+    "privacyDescription": "What personal information LYST collects, why, who processes it, how long it is kept and how to ask for its deletion.",
+    "termsTitle": "Terms of Service | LYST",
+    "termsDescription": "The terms for using the LYST website and host accounts.",
+    "notFound": "Page not found | LYST"
+  },
+  "common": {
+    "skipToContent": "Skip to content",
+    "backToTop": "LYST, back to top",
+    "backToWebsite": "← Back to website",
+    "close": "Close",
+    "newTab": "(opens in a new tab)",
+    "privacyPolicy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "language": "Language"
+  },
+  "nav": {
+    "quickNavigation": "Quick navigation",
+    "accountNav": "Account",
+    "logIn": "Log in",
+    "signUp": "Sign up",
+    "account": "Account",
+    "book": "Book",
+    "bookConsultation": "Book a consultation"
+  },
+  "sections": {
+    "about": "02 / About",
+    "capabilities": "03 / Capabilities",
+    "experience": "04 / The experience",
+    "consultation": "05 / Consultation"
+  },
+  "hero": {
+    "headline": ["Beyond the", "invitation."],
+    "intro": "Bespoke digital invitations and connected event experiences.",
+    "photoAlt": "Friends gathered around a dining table in a Mediterranean home"
+  },
+  "about": {
+    "headline": ["More than", "an invitation."],
+    "intro": "We create bespoke digital invitations and connected event experiences for life's most meaningful moments.",
+    "features": [
+      {
+        "title": "Bespoke design",
+        "body": "Every invitation is a custom creation, thoughtfully designed around your story, your people and your occasion."
+      },
+      {
+        "title": "Connected experience",
+        "body": "Invitations, guest responses and every detail of your event, kept together in one place."
+      }
+    ],
+    "tableAlt": "Linen-covered table with olive branches, wine glass and lemons",
+    "windowAlt": "Stone interior with a vase and olive branches by a tall window"
+  },
+  "capabilities": {
+    "headline": ["One invitation.", "More possibilities."],
+    "intro": "A more connected way to bring people together: before, during and after the event.",
+    "items": [
+      {
+        "title": "Bespoke invitations",
+        "body": "Unique designs that set the tone for your event, crafted around your story.",
+        "alt": "Phone showing a digital invitation on a stone table with olives"
+      },
+      {
+        "title": "Guest management",
+        "body": "Send, track and manage with ease, all in one place.",
+        "alt": "Guests mingling at an evening reception"
+      },
+      {
+        "title": "Interactive experiences",
+        "body": "Guest photos, messages and more, for a more engaging event.",
+        "alt": "Friends laughing around a table by the sea"
+      },
+      {
+        "title": "Real-time updates",
+        "body": "Share changes, important details and last-minute information instantly.",
+        "alt": "Crowd at an outdoor festival at sunset"
+      },
+      {
+        "title": "Lasting memories",
+        "body": "A shared space to relive and keep the moments that matter.",
+        "alt": "Printed event photographs on a stone table"
+      }
+    ]
+  },
+  "experience": {
+    "headline": ["From the first invitation", "to the last memory."],
+    "intro": "The invitation, replies, updates and shared photos stay together, before, during and after your event.",
+    "photoAlt": "Friends laughing together on a terrace at sunset above a harbour",
+    "steps": [
+      { "title": "Invite", "body": "A personal invitation, crafted for your event." },
+      { "title": "Respond", "body": "Guests confirm their attendance." },
+      { "title": "Prepare", "body": "Details, guidance and updates in one place." },
+      { "title": "Participate", "body": "Shared moments and guest interaction." },
+      { "title": "Remember", "body": "A lasting home for the memories." }
+    ]
+  },
+  "consultation": {
+    "headline": ["Your moment", "starts here."],
+    "intro": "Every extraordinary experience begins with a conversation.",
+    "cta": "Book a consultation",
+    "photoAlt": "Guests dancing on a beach at sunset beside a DJ booth",
+    "noscript": "Booking online needs JavaScript. You can also email us at <link>{email}</link>."
+  },
+  "footer": {
+    "tagline": "Bespoke digital invitations and connected event experiences.",
+    "contact": "Contact",
+    "legal": "Legal",
+    "follow": "Follow",
+    "address": "Tbilisi, Georgia"
+  },
+  "form": {
+    "required": "required",
+    "optional": "optional",
+    "error": "Error: {message}",
+    "change": "Change",
+    "changeLabel": "Change {item}",
+    "checkDetails": "Please check your details",
+    "needAttention": "Please check: {fields}."
+  },
+  "booking": {
+    "eyebrow": "Consultation",
+    "title": "Book a consultation",
+    "titleDone": "Request received",
+    "progress": "Progress",
+    "stepDate": "Date",
+    "stepTime": "Time",
+    "stepDetails": "Details",
+    "stepReview": "Review",
+    "completed": "completed",
+    "dateIntro": "Choose the day you would like to talk. No account is required.",
+    "dateSelected": "{date} selected.",
+    "noDate": "No date selected.",
+    "continueToTime": "Continue to time →",
+    "chooseDateToContinue": "Choose a date to continue",
+    "timeIntro": "Choose a preferred time in Tbilisi (GMT+4). We will confirm availability by email.",
+    "preferredTime": "Preferred time",
+    "yourTime": "{time} your time",
+    "selected": "✓ Selected",
+    "localNote": "Your own time ({zone}) is shown under each slot.",
+    "continueToDetails": "Continue to details →",
+    "backToDate": "Back to date",
+    "detailsIntro": "Your consultation details. No account is required.",
+    "checkContact": "Please check your contact details",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "email": "Email",
+    "emailPlaceholder": "Your email",
+    "phone": "Phone",
+    "phonePlaceholder": "Your phone number",
+    "context": "Event context",
+    "contextPlaceholder": "A little about your occasion",
+    "continueToReview": "Continue to review →",
+    "backToTime": "Back to time",
+    "reviewIntro": "Check your details, then send your request. We will reply by email to confirm.",
+    "contactDetails": "Contact details",
+    "sending": "Sending…",
+    "send": "Send request",
+    "backToDetails": "Back to details",
+    "failedEyebrow": "Something went wrong",
+    "failedTitle": "Your request could not be sent.",
+    "failedDefault": "Please check your connection and try again. Nothing has been saved.",
+    "tryAgain": "Try again",
+    "editDetails": "Edit details",
+    "doneEyebrow": "Thank you",
+    "doneTitle": "We have your request.",
+    "doneBody": "We will email {email} to confirm a time. Until then, your slot is a request, not a confirmed booking.",
+    "requestedDate": "Requested date",
+    "requestedTime": "Requested time",
+    "contact": "Contact",
+    "timeLabel": "{time} Tbilisi time",
+    "timeLabelLocal": "{time} Tbilisi time ({local} your time)",
+    "noteTitle": "Your details",
+    "noteBody": "We use these details only to respond to your request. How we handle them: <link>Privacy Policy</link>.",
+    "errors": {
+      "nameRequired": "Enter your name.",
+      "emailInvalid": "Enter a complete email address.",
+      "dateRequired": "Choose a date.",
+      "dateRange": "Choose a date in the coming months.",
+      "timeRequired": "Choose a time.",
+      "rateLimited": "Too many requests. Please try again later.",
+      "tooLarge": "Request too large.",
+      "saveFailed": "We could not save your request. Please try again.",
+      "timeout": "The server took too long to answer. Please try again. Nothing has been saved."
+    }
+  },
+  "auth": {
+    "eyebrow": "Host access only",
+    "loginTitle": "Host log in",
+    "signupTitle": "Host sign up",
+    "forgotTitle": "Forgot password?",
+    "resetTitle": "Choose a new password",
+    "accountTitle": "Your account",
+    "linkInvalid": "That link is invalid or has expired. Log in, or request a new link.",
+    "loginIntro": "Log in with the email and password you registered with.",
+    "signupIntro": "Create your host account. Guests do not need an account.",
+    "forgotIntro": "Enter your email and we will send you a link to choose a new password.",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "email": "Email",
+    "emailPlaceholder": "Your email",
+    "password": "Password",
+    "passwordPlaceholder": "Your password",
+    "passwordPlaceholderNew": "At least 8 characters",
+    "ageConfirm": "I confirm I am 16 or older.",
+    "ageConfirmation": "Age confirmation",
+    "consent": "By signing up, you agree to the <terms>Terms of Service</terms> and confirm you have read the <privacy>Privacy Policy</privacy>.",
+    "loggingIn": "Logging in…",
+    "logIn": "Log in",
+    "creatingAccount": "Creating account…",
+    "signUp": "Sign up",
+    "sendingLink": "Sending…",
+    "sendLink": "Send recovery link",
+    "forgotLink": "Forgot password?",
+    "newHost": "New host? Sign up",
+    "alreadyHost": "Already a host? Log in",
+    "backToLogin": "Back to log in",
+    "resetSent": "If an account exists for that email, a reset link is on its way. Check your inbox and spam folder.",
+    "almostDone": "Almost done",
+    "confirmEmail": "Confirm your email.",
+    "confirmSent": "We sent a confirmation link to {email}. Open it on this device to activate your host account. If you do not see it, check your spam folder.",
+    "goToLogin": "Go to log in",
+    "network": "We could not reach the server. Check your connection, refresh the page and try again.",
+    "minChars": "Use at least {count} characters."
+  },
+  "errors": {
+    "busy": "Too many attempts. Please wait a few minutes and try again.",
+    "invalid_login": "Email or password is incorrect.",
+    "email_not_confirmed": "Please confirm your email first. Check your inbox for our message.",
+    "already_registered": "An account with this email already exists. Log in instead.",
+    "weak_password": "Choose a stronger password: at least 8 characters, and not one you use elsewhere.",
+    "generic": "Something went wrong. Please try again.",
+    "missing_credentials": "Enter your email and password.",
+    "check_details": "Please check your details.",
+    "age": "Host accounts are for people aged 16 or older.",
+    "invalid_email": "Enter a complete email address.",
+    "short_password": "Use at least 8 characters.",
+    "reset_expired": "This reset link has expired. Request a new one from the log-in screen.",
+    "name_required": "Enter your name.",
+    "password_required": "Enter your password."
+  },
+  "account": {
+    "failed": "We could not load your account. Please refresh the page.",
+    "loading": "Loading your account…",
+    "name": "Name",
+    "email": "Email",
+    "type": "Account type",
+    "admin": "Admin",
+    "host": "Host",
+    "since": "Member since",
+    "notYet": "Creating events and managing guests from your account is not available yet. To plan an event, book a consultation from the home page.",
+    "openAdmin": "Open admin",
+    "loggingOut": "Logging out…",
+    "logOut": "Log out"
+  },
+  "reset": {
+    "newPassword": "New password",
+    "saving": "Saving…",
+    "save": "Save new password",
+    "updated": "Your password has been updated.",
+    "goToAccount": "Go to your account"
+  },
+  "notFound": {
+    "eyebrow": "Error 404",
+    "title": "This page does not exist.",
+    "body": "The link may be old or mistyped. Everything about LYST starts on the home page.",
+    "home": "Go to the home page",
+    "book": "Book a consultation"
+  },
+  "legal": {
+    "version": "Version",
+    "updated": "Last updated",
+    "contact": "Contact",
+    "prevails": "This document is available in Georgian, English and Russian. If the versions differ, the Georgian version prevails.",
+    "otherDocPrivacy": "Privacy Policy",
+    "otherDocTerms": "Terms of Service"
+  }
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useId } from "react";
 
 const inputBase =
@@ -29,6 +30,7 @@ export function Field({
   /** Match the server's limit, so nothing is cut off silently after sending. */
   maxLength?: number;
 }) {
+  const t = useTranslations("form");
   const id = useId();
   const errId = `${id}-err`;
   const common = {
@@ -46,7 +48,7 @@ export function Field({
   return (
     <div>
       <label htmlFor={id} className="mb-3 block text-[13px] font-medium">
-        {label} ({required ? "required" : "optional"})
+        {label} ({required ? t("required") : t("optional")})
       </label>
       {multiline ? (
         <textarea
@@ -65,7 +67,7 @@ export function Field({
       )}
       {error && (
         <p id={errId} className="mt-2 text-[13px] font-medium">
-          Error: {error}
+          {t("error", { message: error })}
         </p>
       )}
     </div>
@@ -138,6 +140,7 @@ export function SummaryRow({
   value: string;
   onChange?: () => void;
 }) {
+  const t = useTranslations("form");
   return (
     <div className="border-b border-[#efe3dc] py-5 first:pt-0">
       <div className="flex items-center justify-between">
@@ -146,10 +149,10 @@ export function SummaryRow({
           <button
             type="button"
             onClick={onChange}
-            aria-label={`Change ${label.toLowerCase()}`}
+            aria-label={t("changeLabel", { item: label.toLowerCase() })}
             className="px-2 py-1 text-xs uppercase tracking-[0.15em] hover:underline focus-visible:outline-2 focus-visible:outline-black"
           >
-            Change
+            {t("change")}
           </button>
         )}
       </div>

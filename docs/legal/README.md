@@ -1,8 +1,9 @@
 # Legal documents: LAWYER REVIEW REQUIRED
 
-`/privacy` and `/terms` are **drafts** (version 1.0, 2026-10-30), written in plain English and Georgian from what the site actually does. They are live so the site isn't without them, but **a lawyer qualified in Georgian data protection law (and EU GDPR, if you serve EU visitors) must review them before you rely on them.** This note is deliberately not shown on the pages.
+`/privacy` and `/terms` are **drafts** (version 1.0, 2026-10-30), written in plain English and Georgian from what the site actually does, with a Russian translation added on 2026-10-31. Each language has its own page (`/privacy`, `/en/privacy`, `/ru/privacy`, same for `/terms`) and says the Georgian version prevails. They are live so the site isn't without them, but **a lawyer qualified in Georgian data protection law (and EU GDPR, if you serve EU visitors) must review them before you rely on them.** This note is deliberately not shown on the pages.
 
-- Text: `lib/legal/privacy.ts`, `lib/legal/terms.ts` (both languages, same sections in the same order)
+- Text: `lib/legal/privacy.ts`, `lib/legal/terms.ts` (all three languages, same sections in the same order)
+- "Georgian prevails" sentence: `legal.prevails` in `messages/{ka,en,ru}.json`
 - Version and date: `lib/legal/meta.ts`
 - Page layout: `app/components/legal/LegalPage.tsx`
 
@@ -26,3 +27,4 @@ Bump `LEGAL_VERSION`, set `LEGAL_UPDATED` in `lib/legal/meta.ts`, and add a line
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 2026-10-30 | First drafts (EN + KA), pending lawyer review |
+| 1.0 | 2026-10-31 | Russian translation added, one page per language, "Georgian version prevails" line in every language. Content unchanged, so the version stays 1.0. The Russian text needs the same review. |

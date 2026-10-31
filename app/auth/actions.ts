@@ -1,31 +1,36 @@
 "use server";
 
 import { headers } from "next/headers";
+import { hasLocale } from "next-intl";
+import { routing, type Locale } from "@/i18n/routing";
+import { localePath } from "@/lib/i18n-meta";
 import { rateLimited, visitorIp, type LimitName } from "@/lib/rate-limit";
 import { createUserClient } from "@/lib/supabase/server";
+import type en from "@/messages/en.json";
 
 // Every auth call runs here, on the server. The session lives only in httpOnly cookies
 // (lib/supabase/server.ts), so no token is ever readable by browser JavaScript.
 // Server Actions are public endpoints: every argument is treated as untrusted input.
+// Failures are codes (errors.* in messages/*.json); the browser shows them in the visitor's language.
 
-type Failure = { error: string };
+export type AuthError = keyof typeof en.errors;
+type Failure = { error: AuthError };
 export type Account = { email: string; name: string | null; role: "admin" | "host"; since: string };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const BUSY = "Too many attempts. Please wait a few minutes and try again.";
-
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
+const lang = (v: unknown): Locale => (hasLocale(routing.locales, v) ? v : routing.defaultLocale);
 
-// Supabase messages become fixed sentences; anything unexpected stays in the server log.
-function friendly(message: string) {
+// Supabase messages become fixed codes; anything unexpected stays in the server log.
+function friendly(message: string): AuthError {
   const m = message.toLowerCase();
-  if (m.includes("invalid login")) return "Email or password is incorrect.";
-  if (m.includes("email not confirmed")) return "Please confirm your email first. Check your inbox for our message.";
-  if (m.includes("already registered") || m.includes("already been registered")) return "An account with this email already exists. Log in instead.";
-  if (m.includes("rate limit") || m.includes("too many")) return BUSY;
-  if (m.includes("password")) return message; // password-policy hints, e.g. "Password should be at least 8 characters."
+  if (m.includes("invalid login")) return "invalid_login";
+  if (m.includes("email not confirmed")) return "email_not_confirmed";
+  if (m.includes("already registered") || m.includes("already been registered")) return "already_registered";
+  if (m.includes("rate limit") || m.includes("too many")) return "busy";
+  if (m.includes("password")) return "weak_password"; // password-policy hints, e.g. "Password should be at least 8 characters."
   console.error("auth error", message);
-  return "Something went wrong. Please try again.";
+  return "generic";
 }
 
 // Limits per visitor IP; the windows live in lib/rate-limit.ts.
@@ -44,8 +49,8 @@ async function origin() {
 export async function signIn(email: unknown, password: unknown): Promise<Failure | { role: Account["role"] }> {
   const e = str(email, 320);
   const p = typeof password === "string" ? password : "";
-  if (!EMAIL_RE.test(e) || !p) return { error: "Enter your email and password." };
-  if ((await limited("login")) || (await rateLimited("loginEmail", e.toLowerCase()))) return { error: BUSY };
+  if (!EMAIL_RE.test(e) || !p) return { error: "missing_credentials" };
+  if ((await limited("login")) || (await rateLimited("loginEmail", e.toLowerCase()))) return { error: "busy" };
 
   const sb = await createUserClient();
   const { data, error } = await sb.auth.signInWithPassword({ email: e, password: p });
@@ -59,13 +64,14 @@ export async function signUp(input: {
   email: unknown;
   password: unknown;
   ageConfirmed: unknown;
+  locale?: unknown;
 }): Promise<Failure | { signedIn: boolean }> {
   const name = str(input?.name, 200);
   const email = str(input?.email, 320);
   const password = typeof input?.password === "string" ? input.password : "";
-  if (!name || !EMAIL_RE.test(email) || password.length < 8) return { error: "Please check your details." };
-  if (input?.ageConfirmed !== true) return { error: "Host accounts are for people aged 16 or older." };
-  if (await limited("signup")) return { error: BUSY };
+  if (!name || !EMAIL_RE.test(email) || password.length < 8) return { error: "check_details" };
+  if (input?.ageConfirmed !== true) return { error: "age" };
+  if (await limited("signup")) return { error: "busy" };
 
   const sb = await createUserClient();
   const { data, error } = await sb.auth.signUp({
@@ -74,21 +80,21 @@ export async function signUp(input: {
     options: {
       // age_confirmed_16 is stored as profiles.age_confirmed_at by the signup trigger (supabase/schema.sql).
       data: { full_name: name, age_confirmed_16: true },
-      emailRedirectTo: `${await origin()}/auth/callback?next=/account`,
+      emailRedirectTo: `${await origin()}/auth/callback?next=${localePath(lang(input?.locale), "/account")}`,
     },
   });
   if (error) return { error: friendly(error.message) };
   return { signedIn: !!data.session };
 }
 
-export async function requestPasswordReset(email: unknown): Promise<Failure | { ok: true }> {
+export async function requestPasswordReset(email: unknown, locale?: unknown): Promise<Failure | { ok: true }> {
   const e = str(email, 320);
-  if (!EMAIL_RE.test(e)) return { error: "Enter a complete email address." };
-  if (await limited("reset")) return { error: BUSY };
+  if (!EMAIL_RE.test(e)) return { error: "invalid_email" };
+  if (await limited("reset")) return { error: "busy" };
 
   const sb = await createUserClient();
   const { error } = await sb.auth.resetPasswordForEmail(e, {
-    redirectTo: `${await origin()}/auth/callback?next=/reset-password`,
+    redirectTo: `${await origin()}/auth/callback?next=${localePath(lang(locale), "/reset-password")}`,
   });
   if (error) return { error: friendly(error.message) };
   return { ok: true };
@@ -96,14 +102,14 @@ export async function requestPasswordReset(email: unknown): Promise<Failure | { 
 
 export async function updatePassword(password: unknown): Promise<Failure | { ok: true }> {
   const p = typeof password === "string" ? password : "";
-  if (p.length < 8) return { error: "Use at least 8 characters." };
-  if (await limited("password")) return { error: BUSY };
+  if (p.length < 8) return { error: "short_password" };
+  if (await limited("password")) return { error: "busy" };
 
   const sb = await createUserClient();
   const {
     data: { user },
   } = await sb.auth.getUser();
-  if (!user) return { error: "This reset link has expired. Request a new one from the log-in screen." };
+  if (!user) return { error: "reset_expired" };
   const { error } = await sb.auth.updateUser({ password: p });
   if (error) return { error: friendly(error.message) };
   return { ok: true };

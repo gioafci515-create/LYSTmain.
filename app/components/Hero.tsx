@@ -1,5 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import LanguageSwitch from "./LanguageSwitch";
 import TopLink from "./TopLink";
 import Photo from "./Photo";
 import RevealText from "./RevealText";
@@ -8,13 +10,15 @@ const navLink =
   "ulink flex h-11 items-center text-[13px] font-medium uppercase focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white";
 
 export default function Hero() {
+  const t = useTranslations("hero");
+  const nav = useTranslations("nav");
   return (
     // Never taller than the screen (min 480px), so the headline is on the first screen in phone landscape too.
     <section data-tone="dark" className="relative min-h-svh text-white md:h-[min(900px,100svh)] md:min-h-[480px]">
       <div className="absolute inset-0 overflow-hidden">
         <Photo
           src="/images/hero-hd.jpg"
-          label="Friends gathered around a dining table in a Mediterranean home"
+          label={t("photoAlt")}
           className="hero-zoom absolute inset-0"
           mobileSrc="/images/hero-m-hd.jpg"
           // Phone crop is 0.56 wide per 1 tall: on tall screens it is drawn at 56% of the screen height.
@@ -48,21 +52,24 @@ export default function Hero() {
             />
           </TopLink>
 
-          <nav aria-label="Account" className="flex items-center">
+          <div className="flex items-center gap-4 md:gap-8">
+          <LanguageSwitch linkClassName="text-[13px] focus-visible:outline-white" />
+          <nav aria-label={nav("accountNav")} className="flex items-center">
             <div className="hidden items-center gap-8 md:flex">
               <Link href="/login" className={navLink}>
-                <span className="ulink-text">Log in</span>
+                <span className="ulink-text">{nav("logIn")}</span>
               </Link>
               <Link href="/signup" className={navLink}>
-                <span className="ulink-text">Sign up</span>
+                <span className="ulink-text">{nav("signUp")}</span>
               </Link>
             </div>
             <div className="md:hidden">
               <Link href="/account" className={navLink}>
-                <span className="ulink-text">Account</span>
+                <span className="ulink-text">{nav("account")}</span>
               </Link>
             </div>
           </nav>
+          </div>
         </div>
       </header>
 
@@ -72,14 +79,14 @@ export default function Hero() {
           immediate
           delay={250}
           stagger={80}
-          lines={["Beyond the", "invitation."]}
+          lines={t.raw("headline") as string[]}
           className="text-[44px] font-light leading-[0.95] tracking-tight md:text-[72px]"
         />
         <p
           className="fade-up mt-6 max-w-[300px] text-base font-light leading-relaxed text-white/90 md:max-w-[380px] md:text-lg"
           style={{ "--d": "650ms" } as React.CSSProperties}
         >
-          Bespoke digital invitations and connected event experiences.
+          {t("intro")}
         </p>
       </div>
     </section>

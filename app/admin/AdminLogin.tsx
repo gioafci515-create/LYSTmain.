@@ -1,22 +1,25 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { signIn } from "@/app/auth/actions";
 import { Field, PrimaryButton } from "../components/modal/ui";
 
 export default function AdminLogin({ onSignedIn }: { onSignedIn: (email: string) => void }) {
+  // Admin is English-only; sign-in failures arrive as codes (errors.* in messages/en.json).
+  const errT = useTranslations("errors");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function submit() {
-    if (!email.trim() || !password) return setError("Enter your email and password.");
+    if (!email.trim() || !password) return setError(errT("missing_credentials"));
     setBusy(true);
     setError("");
     try {
       const res = await signIn(email.trim(), password);
-      if ("error" in res) setError(res.error);
+      if ("error" in res) setError(errT.has(res.error) ? errT(res.error) : errT("generic"));
       else onSignedIn(email.trim());
     } catch {
       setError("We could not reach the server. Check your connection, refresh the page and try again.");

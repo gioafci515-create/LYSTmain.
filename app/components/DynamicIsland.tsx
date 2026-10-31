@@ -1,20 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { Link } from "@/i18n/navigation";
 import ModalTrigger from "./modal/ModalTrigger";
 import TopLink from "./TopLink";
 
 type Mode = "off" | "compact" | "expanded";
 
-// Sections the island names while you scroll ("live activity").
-const SECTIONS = [
-  ["about", "02 / About"],
-  ["capabilities", "03 / Capabilities"],
-  ["experience", "04 / Experience"],
-  ["consultation", "05 / Consultation"],
-] as const;
+// Sections the island names while you scroll ("live activity"). Labels: sections.* in messages.
+const SECTIONS = ["about", "capabilities", "experience", "consultation"] as const;
 
 // Colours come from the island's tone (see .island in globals.css), so everything uses currentColor.
 const pill =
@@ -47,12 +43,14 @@ function Live({ label }: { label: string }) {
  * compact while you scroll down, expands when you scroll up, hover (mouse), tap, or tab into it.
  */
 export default function DynamicIsland() {
+  const t = useTranslations("nav");
+  const sections = useTranslations("sections");
   const [past, setPast] = useState(false);
   const [scrollingUp, setScrollingUp] = useState(false);
   const [hover, setHover] = useState(false);
   const [focused, setFocused] = useState(false);
   const [tapped, setTapped] = useState(false);
-  const [label, setLabel] = useState("");
+  const [section, setSection] = useState<(typeof SECTIONS)[number] | null>(null);
   const [dark, setDark] = useState(false);
 
   // On once the hero's own header is fully above the screen.
@@ -88,13 +86,13 @@ export default function DynamicIsland() {
 
   // Which section is in the middle of the screen.
   useEffect(() => {
-    const els = SECTIONS.map(([id]) => document.getElementById(id)).filter((el): el is HTMLElement => !!el);
+    const els = SECTIONS.map((id) => document.getElementById(id)).filter((el): el is HTMLElement => !!el);
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
           if (!e.isIntersecting) continue;
-          const hit = SECTIONS.find(([id]) => id === e.target.id);
-          if (hit) setLabel(hit[1]);
+          const hit = SECTIONS.find((id) => id === e.target.id);
+          if (hit) setSection(hit);
         }
       },
       { rootMargin: "-45% 0px -50% 0px" },
@@ -124,11 +122,12 @@ export default function DynamicIsland() {
 
   const mode: Mode = !past ? "off" : scrollingUp || hover || focused || tapped ? "expanded" : "compact";
   const off = mode === "off";
+  const label = section ? sections(section) : "";
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-0 z-40 flex justify-center pt-[max(10px,env(safe-area-inset-top))]">
       <nav
-        aria-label="Quick navigation"
+        aria-label={t("quickNavigation")}
         aria-hidden={off}
         inert={off}
         data-mode={mode}
@@ -153,7 +152,7 @@ export default function DynamicIsland() {
             <Live label={label} />
           </span>
           <ModalTrigger className={pill} tabIndex={-1}>
-            Book <span aria-hidden>&#8599;</span>
+            {t("book")} <span aria-hidden>&#8599;</span>
           </ModalTrigger>
         </div>
 
@@ -164,15 +163,15 @@ export default function DynamicIsland() {
           <span className="flex-1" />
           <div className="hidden items-center md:flex">
             <Link href="/login" className={link}>
-              <span className="ulink-text">Log in</span>
+              <span className="ulink-text">{t("logIn")}</span>
             </Link>
             <Link href="/signup" className={link}>
-              <span className="ulink-text">Sign up</span>
+              <span className="ulink-text">{t("signUp")}</span>
             </Link>
           </div>
           <Link
             href="/account"
-            aria-label="Account"
+            aria-label={t("account")}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-shadow hover:ring-1 hover:ring-current focus-visible:outline-2 focus-visible:outline-current md:hidden"
           >
             <svg aria-hidden width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.3">
@@ -181,8 +180,8 @@ export default function DynamicIsland() {
             </svg>
           </Link>
           <ModalTrigger className={pill}>
-            <span className="md:hidden">Book</span>
-            <span className="hidden md:inline">Book a consultation</span>
+            <span className="md:hidden">{t("book")}</span>
+            <span className="hidden md:inline">{t("bookConsultation")}</span>
             <span aria-hidden>&#8599;</span>
           </ModalTrigger>
         </div>

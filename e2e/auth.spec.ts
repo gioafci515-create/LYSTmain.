@@ -3,7 +3,7 @@ import { expect, hasSupabase, test } from "./fixtures";
 // Form checks that never reach the server.
 test.describe("form validation", () => {
   test("sign-up requires the 16+ confirmation", async ({ page }) => {
-    await page.goto("/signup");
+    await page.goto("/en/signup");
     const form = page.locator("form");
     await form.getByLabel("Name").fill("Test Host");
     await form.getByLabel("Email").fill("test-host@example.com");
@@ -16,7 +16,7 @@ test.describe("form validation", () => {
   });
 
   test("log-in asks for both fields", async ({ page }) => {
-    await page.goto("/login");
+    await page.goto("/en/login");
     await page.locator("form").getByRole("button", { name: "Log in" }).click();
     await expect(page.getByRole("alert").filter({ hasText: "Please check your details" })).toBeVisible();
     await expect(page.getByText("Error: Enter a complete email address.")).toBeVisible();
@@ -33,7 +33,7 @@ test.describe("auth against Supabase", () => {
   test("wrong password gets a friendly error and no readable token", async ({ page }, testInfo) => {
     // One attempt per run (desktop only) keeps well under the per-IP login limit.
     test.skip(testInfo.project.name !== "desktop", "one login attempt per run is enough");
-    await page.goto("/login");
+    await page.goto("/en/login");
     const form = page.locator("form");
     await form.getByLabel("Email").fill(`e2e-${Date.now()}@example.com`);
     await form.getByLabel("Password").fill("definitely-not-the-password");
@@ -47,10 +47,23 @@ test.describe("auth against Supabase", () => {
     expect(await page.evaluate(() => document.cookie)).not.toContain("sb-");
   });
 
-  test("logged-out visitors are sent from /account to /login", async ({ page }) => {
+  test("logged-out visitors are sent from /account to /login, in their language", async ({ page }) => {
+    await page.goto("/en/account");
+    await expect(page).toHaveURL(/\/en\/login$/);
+    await expect(page.getByRole("heading", { level: 1, name: "Host log in" })).toBeVisible();
     await page.goto("/account");
     await expect(page).toHaveURL(/\/login$/);
-    await expect(page.getByRole("heading", { level: 1, name: "Host log in" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "მასპინძლის შესვლა" })).toBeVisible();
+  });
+
+  test("server errors arrive as codes and show in the page language", async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== "desktop", "one login attempt per run is enough");
+    await page.goto("/ru/login");
+    const form = page.locator("form");
+    await form.getByLabel("Эл. почта").fill(`e2e-ru-${Date.now()}@example.com`);
+    await form.getByLabel("Пароль").fill("definitely-not-the-password");
+    await form.getByRole("button", { name: "Войти" }).click();
+    await expect(form.getByRole("alert")).toHaveText(/Неверный адрес эл. почты или пароль.|Слишком много попыток/);
   });
 
   test("logged-out visitors see the admin log-in", async ({ page }) => {

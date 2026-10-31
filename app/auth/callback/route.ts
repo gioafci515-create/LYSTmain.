@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { localeOf, localePath } from "@/lib/i18n-meta";
 import { createUserClient } from "@/lib/supabase/server";
 
 // Landing point for the links in Supabase emails (confirm signup, reset password).
@@ -14,5 +15,6 @@ export async function GET(request: Request) {
     const { error } = await sb.auth.exchangeCodeForSession(code);
     if (!error) return NextResponse.redirect(`${origin}${next}`);
   }
-  return NextResponse.redirect(`${origin}/login?error=link`);
+  // Back to log in, in the language the link was requested in.
+  return NextResponse.redirect(`${origin}${localePath(localeOf(next), "/login")}?error=link`);
 }

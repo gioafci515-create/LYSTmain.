@@ -1,6 +1,10 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { Locale } from "@/i18n/routing";
+import { formatDate, joinList, monthName, weekdaysNarrow } from "@/lib/intl";
+import type en from "@/messages/en.json";
 import { NewTabLink } from "../legal/LegalLinks";
 import {
   DemoNote,
@@ -12,13 +16,15 @@ import {
 } from "./ui";
 
 type Step = "date" | "time" | "details" | "review" | "done" | "failed";
+/** Error codes from validation and app/api/consultations/route.ts; texts are booking.errors.* */
+type ErrorCode = keyof typeof en.booking.errors;
 
-const STEPS: { key: Exclude<Step, "done" | "failed">; label: string }[] = [
-  { key: "date", label: "Date" },
-  { key: "time", label: "Time" },
-  { key: "details", label: "Details" },
-  { key: "review", label: "Review" },
-];
+const STEPS = [
+  { key: "date", label: "stepDate" },
+  { key: "time", label: "stepTime" },
+  { key: "details", label: "stepDetails" },
+  { key: "review", label: "stepReview" },
+] as const satisfies { key: Exclude<Step, "done" | "failed">; label: string }[];
 // Consultation slots are Tbilisi times. Georgia is UTC+4 all year (no daylight saving).
 const TIMES = ["09:30", "11:00", "14:00", "16:30"];
 const TBILISI = "Asia/Tbilisi";
@@ -27,25 +33,15 @@ const localTime = (date: string, time: string, timeZone: string) =>
   new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", timeZone }).format(
     new Date(`${date}T${time}:00+04:00`),
   );
-const WEEKDAYS = ["M", "T", "W", "T", "F", "S", "S"];
 const WEEKS_SHOWN = 5;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const iso = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-const longDate = new Intl.DateTimeFormat("en-GB", {
-  weekday: "long",
-  day: "numeric",
-  month: "long",
-  year: "numeric",
-  timeZone: "UTC",
-});
-const fmtIso = (s: string) => longDate.format(new Date(`${s}T00:00:00Z`));
-
 type Cell = { iso: string; day: number; disabled: boolean };
 
-function buildCalendar(): { cells: Cell[]; label: string } {
+function buildCalendar(locale: Locale): { cells: Cell[]; label: string } {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const start = new Date(today);
@@ -57,12 +53,9 @@ function buildCalendar(): { cells: Cell[]; label: string } {
   });
   const first = new Date(`${cells.find((c) => !c.disabled)!.iso}T00:00:00Z`);
   const last = new Date(`${cells[cells.length - 1].iso}T00:00:00Z`);
-  const m = new Intl.DateTimeFormat("en-GB", { month: "long", timeZone: "UTC" });
-  const y = new Intl.DateTimeFormat("en-GB", { year: "numeric", timeZone: "UTC" });
+  const m = (d: Date) => monthName(locale, d);
   const label =
-    m.format(first) === m.format(last)
-      ? `${m.format(first)} ${y.format(first)}`
-      : `${m.format(first)} – ${m.format(last)} ${y.format(last)}`;
+    m(first) === m(last) ? `${m(first)} ${first.getUTCFullYear()}` : `${m(first)} – ${m(last)} ${last.getUTCFullYear()}`;
   return { cells, label };
 }
 
@@ -76,6 +69,11 @@ export default function BookingFlow({
   /** Called once the request is saved, so the next booking starts from a clean form. */
   onSent: () => void;
 }) {
+  const t = useTranslations("booking");
+  const errT = useTranslations("booking.errors");
+  const form = useTranslations("form");
+  const common = useTranslations("common");
+  const locale = useLocale();
   const [step, setStep] = useState<Step>("date");
   const [date, setDate] = useState<string | null>(null);
   const [time, setTime] = useState<string | null>(null);
@@ -84,12 +82,14 @@ export default function BookingFlow({
   const [phone, setPhone] = useState("");
   const [context, setContext] = useState("");
   const [website, setWebsite] = useState(""); // honeypot
-  const [errors, setErrors] = useState<{ name?: string; email?: string }>({});
+  const [errors, setErrors] = useState<{ name?: ErrorCode; email?: ErrorCode }>({});
   const [sending, setSending] = useState(false);
-  const [failMessage, setFailMessage] = useState("");
+  const [failCode, setFailCode] = useState("");
   const summaryRef = useRef<HTMLDivElement>(null);
 
-  const calendar = useMemo(() => buildCalendar(), []);
+  const calendar = useMemo(() => buildCalendar(locale), [locale]);
+  const fmtIso = (s: string) => formatDate(locale, new Date(`${s}T00:00:00Z`), { weekday: true });
+  const weekdayNames = weekdaysNarrow(locale);
   const timeZone = useMemo(() => Intl.DateTimeFormat().resolvedOptions().timeZone, []);
 
   useEffect(() => {
@@ -102,15 +102,18 @@ export default function BookingFlow({
   // Visitors outside Georgia also see each slot in their own time.
   const showLocal = !!date && timeZone !== TBILISI && localTime(date, "12:00", timeZone) !== "12:00";
   const timeLabel = time
-    ? `${time} Tbilisi time${showLocal && date ? ` (${localTime(date, time, timeZone)} your time)` : ""}`
+    ? showLocal && date
+      ? t("timeLabelLocal", { time, local: localTime(date, time, timeZone) })
+      : t("timeLabel", { time })
     : "";
   const contactLabel = `${name.trim()} · ${email.trim()}${phone.trim() ? ` · ${phone.trim()}` : ""}`;
-  const errorFields = [errors.name && "Name", errors.email && "Email"].filter(Boolean);
+  const errorFields = [errors.name && t("name"), errors.email && t("email")].filter((f): f is string => !!f);
+  const isCode = (code: unknown): code is ErrorCode => typeof code === "string" && errT.has(code as ErrorCode);
 
   function submitDetails() {
     const next: typeof errors = {};
-    if (!name.trim()) next.name = "Enter your name.";
-    if (!EMAIL_RE.test(email.trim())) next.email = "Enter a complete email address.";
+    if (!name.trim()) next.name = "nameRequired";
+    if (!EMAIL_RE.test(email.trim())) next.email = "emailInvalid";
     setErrors(next);
     if (!next.name && !next.email) setStep("review");
   }
@@ -145,20 +148,17 @@ export default function BookingFlow({
           error?: string;
           fields?: Record<string, string>;
         } | null;
-        if (res.status === 400 && data?.fields && (data.fields.name || data.fields.email)) {
-          setErrors({ name: data.fields.name, email: data.fields.email });
+        const fields = data?.fields ?? {};
+        if (res.status === 400 && (isCode(fields.name) || isCode(fields.email))) {
+          setErrors({ name: isCode(fields.name) ? fields.name : undefined, email: isCode(fields.email) ? fields.email : undefined });
           setStep("details");
         } else {
-          setFailMessage(data?.error ?? "");
+          setFailCode(fields.date ?? fields.time ?? data?.error ?? "");
           setStep("failed");
         }
       }
     } catch (err) {
-      setFailMessage(
-        err instanceof DOMException && err.name === "TimeoutError"
-          ? "The server took too long to answer. Please try again. Nothing has been saved."
-          : "",
-      );
+      setFailCode(err instanceof DOMException && err.name === "TimeoutError" ? "timeout" : "");
       setStep("failed");
     } finally {
       setSending(false);
@@ -168,11 +168,11 @@ export default function BookingFlow({
   return (
     <>
       <header className="flex items-start justify-between">
-        <Eyebrow>Consultation</Eyebrow>
+        <Eyebrow>{t("eyebrow")}</Eyebrow>
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close"
+          aria-label={common("close")}
           className="-mt-3 flex h-12 w-12 items-center justify-center border border-[#efe3dc] hover:bg-white focus-visible:outline-2 focus-visible:outline-black"
         >
           <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden>
@@ -185,10 +185,10 @@ export default function BookingFlow({
         id={titleId}
         className="mt-10 text-[40px] font-light leading-[1.05] tracking-tight md:text-5xl"
       >
-        {step === "done" ? "Request received" : "Book a consultation"}
+        {step === "done" ? t("titleDone") : t("title")}
       </h2>
 
-      <ol className="mt-5 grid grid-cols-4 gap-x-3" aria-label="Progress">
+      <ol className="mt-5 grid grid-cols-4 gap-x-3" aria-label={t("progress")}>
         {STEPS.map((s, i) => {
           const complete = finished || i < stepIndex;
           const current = !finished && i === stepIndex;
@@ -202,8 +202,8 @@ export default function BookingFlow({
                   : "border-[#e4dcd5] text-black/80"
               } ${current ? "font-medium" : "font-normal"}`}
             >
-              {s.label}
-              {complete && <span aria-label=" completed"> ✓</span>}
+              {t(s.label)}
+              {complete && <span aria-label={` ${t("completed")}`}> ✓</span>}
             </li>
           );
         })}
@@ -213,12 +213,12 @@ export default function BookingFlow({
         {step === "date" && (
           <div>
             <p className="text-base font-light leading-relaxed text-black/80 md:text-lg">
-              Choose the day you would like to talk. No account is required.
+              {t("dateIntro")}
             </p>
             <p className="mt-8 text-xs uppercase tracking-[0.15em]">{calendar.label}</p>
 
             <div role="group" aria-label={calendar.label} className="mt-6 grid grid-cols-7 gap-y-1 text-center">
-              {WEEKDAYS.map((w, i) => (
+              {weekdayNames.map((w, i) => (
                 <span key={i} className="pb-3 text-xs" aria-hidden>
                   {w}
                 </span>
@@ -245,11 +245,11 @@ export default function BookingFlow({
             </div>
 
             <p className="mt-8 text-[13px] font-medium">
-              {date ? `${dateLabel} selected.` : "No date selected."}
+              {date ? t("dateSelected", { date: dateLabel }) : t("noDate")}
             </p>
             <div className="mt-6">
               <PrimaryButton disabled={!date} onClick={() => setStep("time")}>
-                {date ? "Continue to time →" : "Choose a date to continue"}
+                {date ? t("continueToTime") : t("chooseDateToContinue")}
               </PrimaryButton>
             </div>
           </div>
@@ -257,20 +257,20 @@ export default function BookingFlow({
 
         {step === "time" && (
           <div>
-            <SummaryRow label="Date" value={dateLabel} onChange={() => setStep("date")} />
+            <SummaryRow label={t("stepDate")} value={dateLabel} onChange={() => setStep("date")} />
             <p className="mt-8 text-base font-light text-black/80 md:text-lg">
-              Choose a preferred time in Tbilisi (GMT+4). We will confirm availability by email.
+              {t("timeIntro")}
             </p>
-            <div role="radiogroup" aria-label="Preferred time" className="mt-6 grid gap-2 md:grid-cols-2">
-              {TIMES.map((t) => {
-                const on = time === t;
+            <div role="radiogroup" aria-label={t("preferredTime")} className="mt-6 grid gap-2 md:grid-cols-2">
+              {TIMES.map((slot) => {
+                const on = time === slot;
                 return (
                   <button
-                    key={t}
+                    key={slot}
                     type="button"
                     role="radio"
                     aria-checked={on}
-                    onClick={() => setTime(t)}
+                    onClick={() => setTime(slot)}
                     className={`flex h-14 items-center justify-between border px-4 text-left text-[13px] font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black ${
                       on
                         ? "border-[#201f1d] bg-[#201f1d] text-white"
@@ -278,13 +278,13 @@ export default function BookingFlow({
                     }`}
                   >
                     <span>
-                      {t}
+                      {slot}
                       {showLocal && date && (
-                        <span className="block text-xs font-normal opacity-80">{localTime(date, t, timeZone)} your time</span>
+                        <span className="block text-xs font-normal opacity-80">{t("yourTime", { time: localTime(date, slot, timeZone) })}</span>
                       )}
                     </span>
                     {on ? (
-                      <span>✓ Selected</span>
+                      <span>{t("selected")}</span>
                     ) : (
                       <span aria-hidden className="h-3 w-3 rounded-full border border-black" />
                     )}
@@ -293,13 +293,13 @@ export default function BookingFlow({
               })}
             </div>
             {showLocal && (
-              <p className="mt-6 text-[13px] font-medium">Your own time ({timeZone}) is shown under each slot.</p>
+              <p className="mt-6 text-[13px] font-medium">{t("localNote", { zone: timeZone })}</p>
             )}
             <div className="mt-6 space-y-2">
               <PrimaryButton disabled={!time} onClick={() => setStep("details")}>
-                Continue to details →
+                {t("continueToDetails")}
               </PrimaryButton>
-              <TextButton onClick={() => setStep("date")}>Back to date</TextButton>
+              <TextButton onClick={() => setStep("date")}>{t("backToDate")}</TextButton>
             </div>
           </div>
         )}
@@ -319,22 +319,22 @@ export default function BookingFlow({
                 role="alert"
                 className="mb-6 border-l-2 border-black pl-4 outline-none"
               >
-                <p className="text-[13px] font-medium">Please check your contact details</p>
+                <p className="text-[13px] font-medium">{t("checkContact")}</p>
                 <p className="mt-2 text-base font-light text-black/80">
-                  {errorFields.join(" and ")} need{errorFields.length === 1 ? "s" : ""} attention.
+                  {form("needAttention", { fields: joinList(locale, errorFields) })}
                 </p>
               </div>
             ) : (
               <p className="mb-6 text-base font-light leading-relaxed text-black/80 md:text-lg">
-                Your consultation details. No account is required.
+                {t("detailsIntro")}
               </p>
             )}
             <div className="space-y-6">
               {/* Limits match app/api/consultations/route.ts. */}
-              <Field label="Name" required value={name} onChange={setName} placeholder="Your name" error={errors.name} autoComplete="name" maxLength={200} />
-              <Field label="Email" required type="email" value={email} onChange={setEmail} placeholder="Your email" error={errors.email} autoComplete="email" maxLength={320} />
-              <Field label="Phone" type="tel" value={phone} onChange={setPhone} placeholder="Your phone number" autoComplete="tel" maxLength={50} />
-              <Field label="Event context" multiline value={context} onChange={setContext} placeholder="A little about your occasion" maxLength={4000} />
+              <Field label={t("name")} required value={name} onChange={setName} placeholder={t("namePlaceholder")} error={errors.name && errT(errors.name)} autoComplete="name" maxLength={200} />
+              <Field label={t("email")} required type="email" value={email} onChange={setEmail} placeholder={t("emailPlaceholder")} error={errors.email && errT(errors.email)} autoComplete="email" maxLength={320} />
+              <Field label={t("phone")} type="tel" value={phone} onChange={setPhone} placeholder={t("phonePlaceholder")} autoComplete="tel" maxLength={50} />
+              <Field label={t("context")} multiline value={context} onChange={setContext} placeholder={t("contextPlaceholder")} maxLength={4000} />
               {/* Honeypot: hidden from people, tempting to bots. */}
               <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
                 <label>
@@ -344,8 +344,8 @@ export default function BookingFlow({
               </div>
             </div>
             <div className="mt-6 space-y-2">
-              <PrimaryButton type="submit">Continue to review →</PrimaryButton>
-              <TextButton onClick={() => setStep("time")}>Back to time</TextButton>
+              <PrimaryButton type="submit">{t("continueToReview")}</PrimaryButton>
+              <TextButton onClick={() => setStep("time")}>{t("backToTime")}</TextButton>
             </div>
           </form>
         )}
@@ -353,60 +353,58 @@ export default function BookingFlow({
         {step === "review" && (
           <div>
             <p className="mb-8 text-base font-light text-black/80 md:text-lg">
-              Check your details, then send your request. We will reply by email to confirm.
+              {t("reviewIntro")}
             </p>
-            <SummaryRow label="Date" value={dateLabel} onChange={() => setStep("date")} />
-            <SummaryRow label="Time" value={timeLabel} onChange={() => setStep("time")} />
-            <SummaryRow label="Contact details" value={contactLabel} onChange={() => setStep("details")} />
-            <SummaryRow label="Event context" value={context.trim() || "—"} onChange={() => setStep("details")} />
+            <SummaryRow label={t("stepDate")} value={dateLabel} onChange={() => setStep("date")} />
+            <SummaryRow label={t("stepTime")} value={timeLabel} onChange={() => setStep("time")} />
+            <SummaryRow label={t("contactDetails")} value={contactLabel} onChange={() => setStep("details")} />
+            <SummaryRow label={t("context")} value={context.trim() || "—"} onChange={() => setStep("details")} />
             <div className="mt-6 space-y-2">
               <PrimaryButton onClick={confirm} disabled={sending}>
-                {sending ? "Sending…" : "Send request"}
+                {sending ? t("sending") : t("send")}
               </PrimaryButton>
-              <TextButton onClick={() => setStep("details")}>Back to details</TextButton>
+              <TextButton onClick={() => setStep("details")}>{t("backToDetails")}</TextButton>
             </div>
           </div>
         )}
 
         {step === "failed" && (
           <div className="pt-4">
-            <Eyebrow>Something went wrong</Eyebrow>
+            <Eyebrow>{t("failedEyebrow")}</Eyebrow>
             <p className="mt-6 text-3xl font-light leading-tight">
-              Your request could not be sent.
+              {t("failedTitle")}
             </p>
             <p className="mt-6 text-base font-light text-black/80">
-              {failMessage || "Please check your connection and try again. Nothing has been saved."}
+              {isCode(failCode) ? errT(failCode) : t("failedDefault")}
             </p>
             <div className="mt-10 space-y-2">
-              <PrimaryButton onClick={() => setStep("review")}>Try again</PrimaryButton>
-              <TextButton onClick={() => setStep("details")}>Edit details</TextButton>
+              <PrimaryButton onClick={() => setStep("review")}>{t("tryAgain")}</PrimaryButton>
+              <TextButton onClick={() => setStep("details")}>{t("editDetails")}</TextButton>
             </div>
           </div>
         )}
 
         {step === "done" && (
           <div>
-            <Eyebrow>Thank you</Eyebrow>
-            <p className="mt-6 text-3xl font-light leading-tight">We have your request.</p>
+            <Eyebrow>{t("doneEyebrow")}</Eyebrow>
+            <p className="mt-6 text-3xl font-light leading-tight">{t("doneTitle")}</p>
             <p className="mt-5 text-base font-light text-black/80">
-              We will email {email.trim()} to confirm a time. Until then, your
-              slot is a request, not a confirmed booking.
+              {t("doneBody", { email: email.trim() })}
             </p>
             <div className="mt-8">
-              <SummaryRow label="Requested date" value={dateLabel} />
-              <SummaryRow label="Requested time" value={timeLabel} />
-              <SummaryRow label="Contact" value={contactLabel} />
+              <SummaryRow label={t("requestedDate")} value={dateLabel} />
+              <SummaryRow label={t("requestedTime")} value={timeLabel} />
+              <SummaryRow label={t("contact")} value={contactLabel} />
             </div>
             <div className="mt-6">
-              <PrimaryButton onClick={onClose}>Close</PrimaryButton>
+              <PrimaryButton onClick={onClose}>{common("close")}</PrimaryButton>
             </div>
           </div>
         )}
       </div>
 
-      <DemoNote title="Your details">
-        We use these details only to respond to your request. How we handle them:{" "}
-        <NewTabLink href="/privacy">Privacy Policy</NewTabLink>.
+      <DemoNote title={t("noteTitle")}>
+        {t.rich("noteBody", { link: (chunks) => <NewTabLink href="/privacy">{chunks}</NewTabLink> })}
       </DemoNote>
     </>
   );

@@ -3,6 +3,9 @@
 // and the admin launch checklist flags it.
 export type SocialKey = "instagram" | "tiktok" | "facebook";
 
+/** Used until LYST's own domain exists. Switching domain = setting SITE_URL in Vercel and redeploying. */
+export const DEFAULT_SITE_URL = "https://lystmain.vercel.app";
+
 export const site: {
   name: string;
   url: string;
@@ -10,7 +13,8 @@ export const site: {
   contact: { email: string; phone: string; address: string };
 } = {
   name: "LYST",
-  url: "", // e.g. "https://lyst.com"
+  // Canonical links, hreflang, sitemap and (later) share images and emails all read this.
+  url: (process.env.SITE_URL || DEFAULT_SITE_URL).replace(/\/+$/, ""),
   social: {
     instagram: "https://www.instagram.com/lystinvites/",
     tiktok: "https://www.tiktok.com/@lystinvites",

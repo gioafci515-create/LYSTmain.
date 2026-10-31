@@ -1,6 +1,6 @@
 "use client";
 
-import { site, socialLabels, type SocialKey } from "@/lib/site";
+import { DEFAULT_SITE_URL, site, socialLabels, type SocialKey } from "@/lib/site";
 import { Card, SectionTitle, Stagger } from "./ui";
 
 type Item = { label: string; done: boolean; hint: string };
@@ -20,9 +20,9 @@ const checklist: Item[] = [
   })),
   { label: "Contact email", done: !!site.contact.email, hint: "lib/site.ts → contact.email. Shown in the footer." },
   { label: "Contact phone / address", done: !!(site.contact.phone && site.contact.address), hint: "lib/site.ts → contact.phone and contact.address." },
-  { label: "Production domain", done: !!site.url, hint: "lib/site.ts → url, then point DNS at the host." },
-  { label: "Privacy Policy text", done: false, hint: "Needs approved legal copy. Must list every kind of data collected (see below)." },
-  { label: "Terms text", done: false, hint: "Needs approved legal copy." },
+  { label: "Own domain", done: site.url !== DEFAULT_SITE_URL, hint: "Set SITE_URL in Vercel (e.g. https://lyst.ge) once the domain exists, then point DNS at Vercel." },
+  { label: "Privacy Policy text", done: false, hint: "Drafts live in Georgian, English and Russian; lawyer review pending (docs/legal/README.md)." },
+  { label: "Terms text", done: false, hint: "Drafts live in Georgian, English and Russian; lawyer review pending (docs/legal/README.md)." },
   { label: "Confirmation emails", done: false, hint: "Requests are saved but the customer is not emailed yet. Needs an email provider such as Resend." },
   { label: "Email notification to you", done: false, hint: "You are not notified of new requests yet; check Bookings, or add an email provider." },
   { label: "Supabase email sender", done: false, hint: "Default Supabase emails are rate-limited (a few per hour). Add a custom SMTP sender before launch." },

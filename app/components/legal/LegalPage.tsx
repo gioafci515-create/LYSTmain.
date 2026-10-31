@@ -1,8 +1,10 @@
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import type { Locale } from "@/i18n/routing";
+import { formatLegalDate, LEGAL_VERSION, type Block, type LegalDoc } from "@/lib/legal/meta";
 import { site, telHref } from "@/lib/site";
-import { formatLegalDate, LEGAL_VERSION, legalUi, type Block, type Lang, type LegalDoc } from "@/lib/legal/meta";
+import LanguageSwitch from "../LanguageSwitch";
 
-const LANGS: Lang[] = ["en", "ka"];
 const text = "text-base font-light leading-relaxed text-black/80";
 const navLink =
   "ulink flex h-11 items-center text-xs uppercase tracking-[0.14em] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black";
@@ -18,15 +20,20 @@ function Body({ block }: { block: Block }) {
   );
 }
 
-/** A legal document in English and Georgian on one page, with the version and date of each. */
+/** A legal document in the page's language, with its version, date and the "Georgian prevails" note. */
 export default function LegalPage({
-  docs,
+  doc,
+  locale,
   other,
 }: {
-  docs: Record<Lang, LegalDoc>;
+  doc: LegalDoc;
+  locale: Locale;
   /** The companion document, linked at the end (Privacy <-> Terms). */
   other: { href: string; label: string };
 }) {
+  const t = useTranslations("legal");
+  const common = useTranslations("common");
+  const footer = useTranslations("footer");
   const { email, phone } = site.contact;
   return (
     <main className="mx-auto w-full max-w-[720px] px-6 pb-20 pt-6 md:pt-10">
@@ -35,67 +42,48 @@ export default function LegalPage({
           LYST
         </Link>
         <Link href="/" className={navLink}>
-          <span className="ulink-text">← Back to website</span>
+          <span className="ulink-text">{common("backToWebsite")}</span>
         </Link>
       </div>
 
-      <div id="main" className="mt-14 md:mt-20">
-        <h1 className="text-[40px] font-light leading-[1.05] tracking-tight md:text-5xl">
-          {docs.en.title}
-          <span lang="ka" className="mt-3 block text-2xl md:text-3xl">
-            {docs.ka.title}
-          </span>
-        </h1>
-        <nav aria-label="Language" className="mt-8 flex gap-6">
-          {LANGS.map((l) => (
-            <a key={l} href={`#${l}`} lang={l} hrefLang={l} className={navLink}>
-              <span className="ulink-text">{legalUi[l].language}</span>
-            </a>
-          ))}
-        </nav>
+      <article id="main" className="mt-14 md:mt-20">
+        <h1 className="text-[40px] font-light leading-[1.05] tracking-tight md:text-5xl">{doc.title}</h1>
+        <p className="mt-4 text-xs uppercase tracking-[0.15em] text-black/60">
+          {t("version")} {LEGAL_VERSION} · {t("updated")}: {formatLegalDate(locale)}
+        </p>
+        <LanguageSwitch className="mt-4 -ml-1.5" linkClassName="text-xs tracking-[0.14em]" />
+        <p className="mt-6 border-l-2 border-black pl-4 text-sm font-light leading-relaxed text-black/80">{t("prevails")}</p>
 
-        {LANGS.map((l, i) => {
-          const doc = docs[l];
-          const ui = legalUi[l];
-          return (
-            <article key={l} id={l} lang={l} className={`scroll-mt-6 ${i ? "mt-20 border-t border-[#e6dedb] pt-16" : "mt-12"}`}>
-              <h2 className="text-3xl font-light tracking-tight">{doc.title}</h2>
-              <p className="mt-3 text-xs uppercase tracking-[0.15em] text-black/60">
-                {ui.version} {LEGAL_VERSION} · {ui.updated}: {formatLegalDate(l)}
-              </p>
-              <p className={`mt-8 ${text} md:text-lg`}>{doc.intro}</p>
-              {doc.sections.map((s) => (
-                <section key={s.heading} className="mt-10">
-                  <h3 className="text-lg font-medium">{s.heading}</h3>
-                  {s.body.map((block, j) => (
-                    <Body key={j} block={block} />
-                  ))}
-                </section>
-              ))}
-              <section className="mt-10">
-                <h3 className="text-lg font-medium">{ui.contact}</h3>
-                <p className={`mt-4 ${text}`}>
-                  LYST · {ui.address}
-                  <br />
-                  <a href={`mailto:${email}`} className="underline underline-offset-4">
-                    {email}
-                  </a>
-                  {" · "}
-                  <a href={telHref(phone)} className="underline underline-offset-4">
-                    {phone}
-                  </a>
-                </p>
-              </section>
-            </article>
-          );
-        })}
+        <p className={`mt-10 ${text} md:text-lg`}>{doc.intro}</p>
+        {doc.sections.map((s) => (
+          <section key={s.heading} className="mt-10">
+            <h2 className="text-lg font-medium">{s.heading}</h2>
+            {s.body.map((block, j) => (
+              <Body key={j} block={block} />
+            ))}
+          </section>
+        ))}
+        <section className="mt-10">
+          <h2 className="text-lg font-medium">{t("contact")}</h2>
+          <p className={`mt-4 ${text}`}>
+            LYST · {footer("address")}
+            <br />
+            <a href={`mailto:${email}`} className="underline underline-offset-4">
+              {email}
+            </a>
+            {" · "}
+            <a href={telHref(phone)} className="underline underline-offset-4">
+              {phone}
+            </a>
+          </p>
+        </section>
 
         <p className="mt-16 border-t border-[#e6dedb] pt-6">
           <Link href={other.href} className={navLink}>
             <span className="ulink-text">{other.label}</span>
           </Link>
         </p>
-      </div>
+      </article>
     </main>
   );
 }

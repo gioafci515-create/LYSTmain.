@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
 
 /**
  * Logo link. On the home page it glides back to the top instead of reloading;
@@ -16,12 +16,14 @@ export default function TopLink({
   className?: string;
   tabIndex?: number;
 }) {
+  const t = useTranslations("common");
+  // Without the language prefix: "/" is the home page in every language.
   const pathname = usePathname();
 
   return (
     <Link
       href="/"
-      aria-label="LYST, back to top"
+      aria-label={t("backToTop")}
       tabIndex={tabIndex}
       className={className}
       onClick={(e) => {

@@ -1,11 +1,15 @@
 "use client";
 
-import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { updatePassword } from "@/app/auth/actions";
-import { Field, PrimaryButton } from "../components/modal/ui";
+import { Field, PrimaryButton } from "@/app/components/modal/ui";
+import { Link } from "@/i18n/navigation";
 
 export default function ResetForm() {
+  const t = useTranslations("reset");
+  const auth = useTranslations("auth");
+  const errT = useTranslations("errors");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -13,16 +17,16 @@ export default function ResetForm() {
   const [done, setDone] = useState(false);
 
   async function submit() {
-    if (password.length < 8) return setError("Use at least 8 characters.");
+    if (password.length < 8) return setError(errT("short_password"));
     setError("");
     setMessage("");
     setBusy(true);
     try {
       const res = await updatePassword(password);
-      if ("error" in res) setMessage(res.error);
+      if ("error" in res) setMessage(errT.has(res.error) ? errT(res.error) : errT("generic"));
       else setDone(true);
     } catch {
-      setMessage("We could not reach the server. Check your connection, refresh the page and try again.");
+      setMessage(auth("network"));
     } finally {
       setBusy(false);
     }
@@ -31,12 +35,12 @@ export default function ResetForm() {
   if (done) {
     return (
       <div>
-        <p className="text-2xl font-light">Your password has been updated.</p>
+        <p className="text-2xl font-light">{t("updated")}</p>
         <Link
           href="/account"
           className="mt-8 flex h-14 w-full items-center justify-center bg-[#201f1d] text-xs uppercase tracking-[0.15em] text-white hover:bg-black"
         >
-          Go to your account
+          {t("goToAccount")}
         </Link>
       </div>
     );
@@ -52,12 +56,12 @@ export default function ResetForm() {
       }}
     >
       <Field
-        label="New password"
+        label={t("newPassword")}
         required
         type="password"
         value={password}
         onChange={setPassword}
-        placeholder="At least 8 characters"
+        placeholder={auth("passwordPlaceholderNew")}
         error={error}
         autoComplete="new-password"
       />
@@ -67,7 +71,7 @@ export default function ResetForm() {
         </p>
       )}
       <PrimaryButton type="submit" disabled={busy}>
-        {busy ? "Saving…" : "Save new password"}
+        {busy ? t("saving") : t("save")}
       </PrimaryButton>
     </form>
   );
