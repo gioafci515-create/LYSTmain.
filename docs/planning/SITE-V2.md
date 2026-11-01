@@ -1,6 +1,6 @@
 # LYST site v2: product & conversion plan
 
-**Status:** approved 2026-10-31, with the answers below. **Built:** phase 0 (languages), 2026-10-31. **Next:** phase 1 (header and navigation).
+**Status:** approved 2026-10-31, with the answers below. **Built:** phase 0 (languages), 2026-10-31; phase 1 (header and navigation), 2026-11-01. **Next:** phase 2 (inquiries).
 **Constraints:** minimal premium monochrome; every rule in `CLAUDE.md` (design anti-patterns, legal, security); Lighthouse mobile ≥ 95 on the live site; no third-party requests from the browser.
 
 ---
@@ -107,6 +107,11 @@ Each phase is pushed separately. Each one gets smoke tests, axe and a Lighthouse
 - **Island:** wordmark · current section · CTA (on phones the CTA moves to the sticky bar).
 - **Footer:** **"LYST · Invite Smarter."**, plus a small **"Client login"** link. Sign-up and Account are unlinked (the routes still work, marked `noindex`).
 - **CTA label:** EN "Plan your invitation" · KA „დაგეგმე მოსაწვევი“ · RU «Спланировать приглашение».
+- **As built (2026-11-01):**
+  - Work, How it works, Prices and Occasions don't exist yet, so the header links to today's sections (About, Capabilities, The experience). Phases 3 to 5 each swap their own link in (`app/components/nav.ts`). No link points at a section that isn't built.
+  - Links sit inline from 1024 px wide. Below that, "Menu" opens a full-screen sheet with the links, the CTA and the contact details.
+  - Until phase 2, the CTA opens today's consultation booking, and the consultation section keeps its "Book a consultation" button.
+  - Until phase 6, the island keeps a short CTA on phones: "Plan" · „დაგეგმე“ · «Начать» (Russian «Спланировать» doesn't fit; listed in `copy-review.md`).
 
 ## 2 · Inquiry, partner inquiry, admin, email, WhatsApp
 

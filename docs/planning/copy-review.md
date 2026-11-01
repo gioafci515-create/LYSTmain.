@@ -4,7 +4,7 @@
 
 Every Georgian (ka) and Russian (ru) text on the public site, next to the English. Georgian was written natively (not translated word for word); Russian follows the English. Mark anything that sounds unnatural, too formal, or wrong for a premium studio, and write the better version next to it. Changes go into `messages/ka.json` and `messages/ru.json` (same keys).
 
-Generated from the message files on 2026-10-31. Things in curly braces, like `{email}`, are filled in by the site; text inside `<link>…</link>`, `<terms>…</terms>` or `<privacy>…</privacy>` becomes a link.
+Generated from the message files on 2026-11-01. Things in curly braces, like `{email}`, are filled in by the site; text inside `<link>…</link>`, `<terms>…</terms>` or `<privacy>…</privacy>` becomes a link.
 
 ## Decisions to confirm
 
@@ -15,6 +15,10 @@ Generated from the message files on 2026-10-31. Things in curly braces, like `{e
 5. **Capabilities, item 3:** the English used to say "voice messages, polls"; it now says "Guest photos, messages and more" in all three languages, because voice messages and polls don't exist yet (only real features are named).
 6. **Legal pages:** `/privacy` and `/terms` exist in all three languages (`lib/legal/privacy.ts`, `lib/legal/terms.ts`). Each says the Georgian version prevails. The Russian texts are new and need the same review as the rest, ideally together with the lawyer review in `docs/legal/README.md`.
 7. **Dates:** browsers don't all know Georgian date names, so the site spells them out itself (`lib/intl.ts`): months იანვარი … დეკემბერი, weekdays ორშაბათი … კვირა, one-letter calendar headings ო ს ო ხ პ შ კ, and dates written like "კვირა, 1 ნოემბერი, 2026". Please check these too.
+8. **Main call to action** (header, menu, island): „დაგეგმე მოსაწვევი“ was set in the plan, but it uses the informal "you" while the rest of the site uses **თქვენ** (formal would be „დაგეგმეთ მოსაწვევი“). Keep it, or switch to formal? Russian «Спланировать приглашение» is neutral.
+9. **Short call to action** in the small floating header on phones: EN "Plan", KA „დაგეგმე“, RU **«Начать»** ("Start"), because «Спланировать» doesn't fit there. A better short Russian word of up to about 8 letters is welcome.
+10. **"Client login"** in the footer: KA „კლიენტის შესვლა“, RU «Вход для клиентов». The log-in page itself still says "Host log in" („მასპინძლის შესვლა“, «Вход для организаторов»). Should both use the same word?
+11. **Russian "The experience"** is «Как это работает» ("How it works"), in the section label and the header link. Phase 4 adds a real "How it works" section, so this one will need a different Russian name then.
 
 ## meta
 
@@ -45,18 +49,20 @@ Generated from the message files on 2026-10-31. Things in curly braces, like `{e
 | `privacyPolicy` | Privacy Policy | კონფიდენციალურობის პოლიტიკა | Политика конфиденциальности |
 | `terms` | Terms of Service | მომსახურების პირობები | Условия использования |
 | `language` | Language | ენა | Язык |
+| `slogan` | Invite Smarter. | Invite Smarter. | Invite Smarter. |
 
 ## nav
 
 | Key | English | ქართული | Русский |
 |---|---|---|---|
+| `main` | Main | მთავარი | Основная |
 | `quickNavigation` | Quick navigation | სწრაფი ნავიგაცია | Быстрая навигация |
-| `accountNav` | Account | ანგარიში | Аккаунт |
-| `logIn` | Log in | შესვლა | Войти |
-| `signUp` | Sign up | რეგისტრაცია | Регистрация |
-| `account` | Account | ანგარიში | Аккаунт |
-| `book` | Book | ჩაწერა | Записаться |
-| `bookConsultation` | Book a consultation | კონსულტაციაზე ჩაწერა | Записаться на консультацию |
+| `about` | About | ჩვენ შესახებ | О нас |
+| `capabilities` | Capabilities | შესაძლებლობები | Возможности |
+| `experience` | The experience | გამოცდილება | Как это работает |
+| `cta` | Plan your invitation | დაგეგმე მოსაწვევი | Спланировать приглашение |
+| `ctaShort` | Plan | დაგეგმე | Начать |
+| `menu` | Menu | მენიუ | Меню |
 
 ## sections
 
@@ -152,6 +158,7 @@ Generated from the message files on 2026-10-31. Things in curly braces, like `{e
 | `legal` | Legal | სამართლებრივი ინფორმაცია | Правовая информация |
 | `follow` | Follow | გამოგვყევით | Мы в соцсетях |
 | `address` | Tbilisi, Georgia | თბილისი, საქართველო | Тбилиси, Грузия |
+| `clientLogin` | Client login | კლიენტის შესვლა | Вход для клиентов |
 
 ## form
 

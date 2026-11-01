@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
-import { Link } from "@/i18n/navigation";
 import ModalTrigger from "./modal/ModalTrigger";
 import TopLink from "./TopLink";
 
@@ -15,8 +14,6 @@ const SECTIONS = ["about", "capabilities", "experience", "consultation"] as cons
 // Colours come from the island's tone (see .island in globals.css), so everything uses currentColor.
 const pill =
   "island-pill flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-xs font-medium uppercase tracking-[0.14em] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current md:h-9 md:px-4";
-const link =
-  "ulink flex h-9 items-center rounded-full px-3 text-xs uppercase tracking-[0.14em] focus-visible:outline-2 focus-visible:outline-current";
 
 function Wordmark({ tabIndex }: { tabIndex?: number }) {
   return (
@@ -152,7 +149,7 @@ export default function DynamicIsland() {
             <Live label={label} />
           </span>
           <ModalTrigger className={pill} tabIndex={-1}>
-            {t("book")} <span aria-hidden>&#8599;</span>
+            {t("ctaShort")} <span aria-hidden>&#8599;</span>
           </ModalTrigger>
         </div>
 
@@ -161,27 +158,9 @@ export default function DynamicIsland() {
           <Wordmark />
           <Live label={label} />
           <span className="flex-1" />
-          <div className="hidden items-center md:flex">
-            <Link href="/login" className={link}>
-              <span className="ulink-text">{t("logIn")}</span>
-            </Link>
-            <Link href="/signup" className={link}>
-              <span className="ulink-text">{t("signUp")}</span>
-            </Link>
-          </div>
-          <Link
-            href="/account"
-            aria-label={t("account")}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-shadow hover:ring-1 hover:ring-current focus-visible:outline-2 focus-visible:outline-current md:hidden"
-          >
-            <svg aria-hidden width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.3">
-              <circle cx="9" cy="6" r="3.2" />
-              <path d="M2.8 16c.8-3 3.3-4.6 6.2-4.6s5.4 1.6 6.2 4.6" />
-            </svg>
-          </Link>
           <ModalTrigger className={pill}>
-            <span className="md:hidden">{t("book")}</span>
-            <span className="hidden md:inline">{t("bookConsultation")}</span>
+            <span className="md:hidden">{t("ctaShort")}</span>
+            <span className="hidden md:inline">{t("cta")}</span>
             <span aria-hidden>&#8599;</span>
           </ModalTrigger>
         </div>

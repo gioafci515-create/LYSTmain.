@@ -1,13 +1,18 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import HeaderMenu from "./HeaderMenu";
 import LanguageSwitch from "./LanguageSwitch";
+import ModalTrigger from "./modal/ModalTrigger";
+import { NAV_ITEMS } from "./nav";
 import TopLink from "./TopLink";
 import Photo from "./Photo";
 import RevealText from "./RevealText";
 
 const navLink =
   "ulink flex h-11 items-center text-[13px] font-medium uppercase focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white";
+// Hover inverts: outline → solid white.
+const cta =
+  "hidden h-11 shrink-0 items-center gap-2 border border-white/80 px-5 text-xs uppercase tracking-[0.12em] transition-colors duration-300 hover:bg-white hover:text-black focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white lg:flex";
 
 export default function Hero() {
   const t = useTranslations("hero");
@@ -40,7 +45,7 @@ export default function Hero() {
       />
 
       <header id="hero-header" className="relative z-10 px-6 md:px-10 xl:px-20">
-        <div className="flex h-24 items-center justify-between md:h-[84px]">
+        <div className="flex h-24 items-center justify-between gap-6 md:h-[84px]">
           <TopLink className="block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
             <Image
               src="/images/lyst-wordmark.png"
@@ -52,23 +57,24 @@ export default function Hero() {
             />
           </TopLink>
 
-          <div className="flex items-center gap-4 md:gap-8">
-          <LanguageSwitch linkClassName="text-[13px] focus-visible:outline-white" />
-          <nav aria-label={nav("accountNav")} className="flex items-center">
-            <div className="hidden items-center gap-8 md:flex">
-              <Link href="/login" className={navLink}>
-                <span className="ulink-text">{nav("logIn")}</span>
-              </Link>
-              <Link href="/signup" className={navLink}>
-                <span className="ulink-text">{nav("signUp")}</span>
-              </Link>
-            </div>
-            <div className="md:hidden">
-              <Link href="/account" className={navLink}>
-                <span className="ulink-text">{nav("account")}</span>
-              </Link>
-            </div>
-          </nav>
+          <div className="flex items-center gap-3 md:gap-6 lg:gap-8">
+            {/* Wide screens: the links inline. Phones and tablets: the same links behind "Menu". */}
+            <nav aria-label={nav("main")} className="hidden lg:block">
+              <ul className="flex items-center gap-8">
+                {NAV_ITEMS.map((item) => (
+                  <li key={item.key}>
+                    <a href={item.href} className={navLink}>
+                      <span className="ulink-text">{nav(item.key)}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <LanguageSwitch linkClassName="text-[13px] focus-visible:outline-white" />
+            <ModalTrigger className={cta}>
+              {nav("cta")} <span aria-hidden>&#8599;</span>
+            </ModalTrigger>
+            <HeaderMenu className="focus-visible:outline-white lg:hidden" />
           </div>
         </div>
       </header>

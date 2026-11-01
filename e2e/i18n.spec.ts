@@ -18,6 +18,10 @@ test.describe("message files", () => {
   test("no message says RSVP (CLAUDE.md wording rules)", () => {
     for (const m of [ka, en, ru]) expect(JSON.stringify(m)).not.toMatch(/rsvp/i);
   });
+
+  test('"Invite Smarter." is never translated', () => {
+    for (const m of [ka, en, ru]) expect(m.common.slogan).toBe("Invite Smarter.");
+  });
 });
 
 const homes = [

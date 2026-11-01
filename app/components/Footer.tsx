@@ -76,9 +76,18 @@ export default function Footer() {
       <div className="mx-auto max-w-[1760px]">
         <div className="grid gap-12 xl:grid-cols-[1fr_auto] xl:gap-16">
           <Reveal>
-            <TopLink className="inline-block rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
-              <Image src="/images/lyst-wordmark.png" alt="" width={78} height={29} className="h-auto w-[88px] brightness-0" />
-            </TopLink>
+            {/* Lockup: the wordmark, then "Invite Smarter." (never translated, so marked English). */}
+            <div className="flex items-center gap-3">
+              <TopLink className="inline-block rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-current">
+                <Image src="/images/lyst-wordmark.png" alt="" width={78} height={29} className="h-auto w-[88px] brightness-0" />
+              </TopLink>
+              <p className="text-[22px] font-light leading-none">
+                <span aria-hidden>&middot; </span>
+                <span lang="en" className="tracking-tight">
+                  {common("slogan")}
+                </span>
+              </p>
+            </div>
             <p className="mt-6 max-w-[300px] text-base font-light leading-relaxed text-black/70">
               {t("tagline")}
             </p>
@@ -101,8 +110,16 @@ export default function Footer() {
         </div>
 
         <Reveal variant="fade" delay={450}>
-          <div className="mt-16 flex items-center justify-between gap-6 border-t border-[#e6dedb] pt-4 text-xs font-medium uppercase tracking-[0.15em] text-black/55 xl:mt-24">
-            <p>&copy; LYST</p>
+          <div className="mt-16 flex items-center justify-between gap-6 border-t border-[#e6dedb] pt-4 text-xs font-medium uppercase tracking-[0.15em] text-black/60 xl:mt-24">
+            <div className="flex flex-wrap items-center gap-x-6">
+              <p>&copy; LYST</p>
+              <Link
+                href="/login"
+                className="ulink flex h-11 items-center text-black/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current"
+              >
+                <span className="ulink-text">{t("clientLogin")}</span>
+              </Link>
+            </div>
             <LanguageSwitch landmark={false} className="-mr-1.5" linkClassName="text-xs tracking-[0.15em] text-black/70" />
           </div>
         </Reveal>

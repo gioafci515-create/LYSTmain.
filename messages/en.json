@@ -21,16 +21,18 @@
     "newTab": "(opens in a new tab)",
     "privacyPolicy": "Privacy Policy",
     "terms": "Terms of Service",
-    "language": "Language"
+    "language": "Language",
+    "slogan": "Invite Smarter."
   },
   "nav": {
+    "main": "Main",
     "quickNavigation": "Quick navigation",
-    "accountNav": "Account",
-    "logIn": "Log in",
-    "signUp": "Sign up",
-    "account": "Account",
-    "book": "Book",
-    "bookConsultation": "Book a consultation"
+    "about": "About",
+    "capabilities": "Capabilities",
+    "experience": "The experience",
+    "cta": "Plan your invitation",
+    "ctaShort": "Plan",
+    "menu": "Menu"
   },
   "sections": {
     "about": "02 / About",
@@ -114,7 +116,8 @@
     "contact": "Contact",
     "legal": "Legal",
     "follow": "Follow",
-    "address": "Tbilisi, Georgia"
+    "address": "Tbilisi, Georgia",
+    "clientLogin": "Client login"
   },
   "form": {
     "required": "required",
